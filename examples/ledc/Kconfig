@@ -1,0 +1,39 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config EXAMPLES_LEDC
+	bool "LED controller example"
+	default n
+	depends on ARCH_HAVE_LEDS && !ARCH_LEDS
+	---help---
+		Enable the LED controllerexample
+
+if EXAMPLES_LEDC
+
+config EXAMPLES_LEDC_PROGNAME
+	string "Program name"
+	default "ledc"
+	depends on BUILD_KERNEL
+	---help---
+		This is the name of the program that will be use when the NSH ELF
+		program is installed.
+
+config EXAMPLES_LEDC_PRIORITY
+	int "LED task priority"
+	default 100
+
+config EXAMPLES_LEDC_STACKSIZE
+	int "LED stack size"
+	default 2048
+
+config EXAMPLES_LEDC_DEVPATH
+	string "LED device path"
+	default "/dev/userleds"
+
+config EXAMPLES_LEDLCLEDSET
+	hex "Subset of LEDs to use"
+	default 0x0f
+
+endif # EXAMPLES_LEDC
