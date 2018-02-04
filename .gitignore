@@ -1,52 +1,23 @@
-# Prerequisites
-*.d
-
-# Object files
+.depend
+Make.dep
 *.o
-*.ko
-*.obj
-*.elf
-
-# Linker output
-*.ilk
-*.map
-*.exp
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
 *.a
-*.la
-*.lo
+*.d
+*.i
+*~
+.swp
+.*.swp
+core
+.gdbinit
+cscope.out
+/Kconfig
+/bin
+/external
+/.context
+/.config
+/.depend
+/*.lib
+/romfs.img
+/boot_romfsimg.h
+/*/*/.built
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
