@@ -64,9 +64,13 @@ int main(int argc, FAR char *argv[])
 int ledc_main(int argc, FAR char *argv[])
 #endif
 {
+	if(argc<2){
+		printf("Usage: ledc on/off\n");
+		return 1;
+	}
 	userled_set_t supported;
 	userled_set_t ledset;
-	printf("ledc: Opening %s\n", CONFIG_EXAMPLES_LEDC_DEVPATH);
+//	printf("ledc: Opening %s\n", CONFIG_EXAMPLES_LEDC_DEVPATH);
 	int fd=open(CONFIG_EXAMPLES_LEDC_DEVPATH, O_WRONLY);
 	if (fd < 0){
 	      int errcode = errno;
@@ -82,12 +86,15 @@ int ledc_main(int argc, FAR char *argv[])
            errcode);
     	return 1;
 	}
-	printf("ledc: Supported LEDs 0x%02x\n", (unsigned int)supported);
+	//printf("ledc: Supported LEDs 0x%02x\n", (unsigned int)supported);
 
 	if (!strcmp(argv[1],"on")){
+		printf("Turning on LED\n");
 		ledset=supported&0x00;
+	}else {
+		printf("Turning off LED\n");
+		ledset=supported&0xFF;
 	}
-	else ledset=supported&0xFF;
 
 	ret = ioctl(fd, ULEDIOC_SETALL, ledset);//setting
 	if (ret < 0) {
