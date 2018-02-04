@@ -1,11 +1,11 @@
 ############################################################################
-# apps/examples/ledc/Make.defs
+# apps/examples/hello3300/Make.defs
 # Adds selected applications to apps/ build
 #
 #   Author: Kyle Lei <leizhao2@gmail.com>
 #
 ############################################################################
 
-ifeq ($(CONFIG_EXAMPLES_LEDC),y)
-CONFIGURED_APPS += examples/ledc
+ifeq ($(CONFIG_EXAMPLES_HELLO3300),y)
+CONFIGURED_APPS += examples/hello3300
 endif
