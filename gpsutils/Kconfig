@@ -6,5 +6,5 @@
 #
 
 menu "GPS Utilities"
-source "/Users/kyle/git/nuttx/apps/gpsutils/minmea/Kconfig"
+source "/Users/kyle/git/nutthex/apps/gpsutils/minmea/Kconfig"
 endmenu # GPS Utilities

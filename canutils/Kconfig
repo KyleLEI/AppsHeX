@@ -6,8 +6,8 @@
 #
 
 menu "CAN Utilities"
-source "/Users/kyle/git/nuttx/apps/canutils/canlib/Kconfig"
-source "/Users/kyle/git/nuttx/apps/canutils/libcanard/Kconfig"
-source "/Users/kyle/git/nuttx/apps/canutils/libobd2/Kconfig"
-source "/Users/kyle/git/nuttx/apps/canutils/libuavcan/Kconfig"
+source "/Users/kyle/git/nutthex/apps/canutils/canlib/Kconfig"
+source "/Users/kyle/git/nutthex/apps/canutils/libcanard/Kconfig"
+source "/Users/kyle/git/nutthex/apps/canutils/libobd2/Kconfig"
+source "/Users/kyle/git/nutthex/apps/canutils/libuavcan/Kconfig"
 endmenu # CAN Utilities

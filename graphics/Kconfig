@@ -6,9 +6,9 @@
 #
 
 menu "Graphics Support"
-source "/Users/kyle/git/nuttx/apps/graphics/NxWidgets/Kconfig"
-source "/Users/kyle/git/nuttx/apps/graphics/pdcurs34/Kconfig"
-source "/Users/kyle/git/nuttx/apps/graphics/screenshot/Kconfig"
-source "/Users/kyle/git/nuttx/apps/graphics/tiff/Kconfig"
-source "/Users/kyle/git/nuttx/apps/graphics/traveler/Kconfig"
+source "/Users/kyle/git/nutthex/apps/graphics/NxWidgets/Kconfig"
+source "/Users/kyle/git/nutthex/apps/graphics/pdcurs34/Kconfig"
+source "/Users/kyle/git/nutthex/apps/graphics/screenshot/Kconfig"
+source "/Users/kyle/git/nutthex/apps/graphics/tiff/Kconfig"
+source "/Users/kyle/git/nutthex/apps/graphics/traveler/Kconfig"
 endmenu # Graphics Support

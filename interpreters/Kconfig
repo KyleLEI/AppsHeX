@@ -6,9 +6,9 @@
 #
 
 menu "Interpreters"
-source "/Users/kyle/git/nuttx/apps/interpreters/bas/Kconfig"
-source "/Users/kyle/git/nuttx/apps/interpreters/ficl/Kconfig"
-source "/Users/kyle/git/nuttx/apps/interpreters/micropython/Kconfig"
-source "/Users/kyle/git/nuttx/apps/interpreters/minibasic/Kconfig"
-source "/Users/kyle/git/nuttx/apps/interpreters/pcode/Kconfig"
+source "/Users/kyle/git/nutthex/apps/interpreters/bas/Kconfig"
+source "/Users/kyle/git/nutthex/apps/interpreters/ficl/Kconfig"
+source "/Users/kyle/git/nutthex/apps/interpreters/micropython/Kconfig"
+source "/Users/kyle/git/nutthex/apps/interpreters/minibasic/Kconfig"
+source "/Users/kyle/git/nutthex/apps/interpreters/pcode/Kconfig"
 endmenu # Interpreters
