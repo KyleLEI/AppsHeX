@@ -32,8 +32,4 @@ config EXAMPLES_LEDC_DEVPATH
 	string "LED device path"
 	default "/dev/userleds"
 
-config EXAMPLES_LEDLCLEDSET
-	hex "Subset of LEDs to use"
-	default 0x0f
-
 endif # EXAMPLES_LEDC

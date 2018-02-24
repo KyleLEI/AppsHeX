@@ -42,23 +42,23 @@ int ledc_main(int argc, FAR char *argv[])
 	}
 	userled_set_t supported;
 	userled_set_t ledset;
-//	printf("ledc: Opening %s\n", CONFIG_EXAMPLES_LEDC_DEVPATH);
+	printf("ledc: Opening %s\n", CONFIG_EXAMPLES_LEDC_DEVPATH);
 	int fd=open(CONFIG_EXAMPLES_LEDC_DEVPATH, O_WRONLY);
 	if (fd < 0){
 	      int errcode = errno;
-	      printf("led_daemon: ERROR: open failed: %d\n",
-	             errcode);
+	      printf("ledc: ERROR: open failed: %s\n",
+	             strerror(errcode));
 	      return 1;
 	}
 	int ret=ioctl(fd, ULEDIOC_SUPPORTED,
             (unsigned long)((uintptr_t)&supported));
 	if (ret < 0){
 		int errcode = errno;
-    	printf("ledc: ERROR: ioctl(ULEDIOC_SUPPORTED) failed: %d\n",
-           errcode);
+    		printf("ledc: ERROR: ioctl(ULEDIOC_SUPPORTED) failed: %s\n",
+           strerror(errcode));
     	return 1;
 	}
-	//printf("ledc: Supported LEDs 0x%02x\n", (unsigned int)supported);
+	printf("ledc: Supported LEDs 0x%02x\n", (unsigned int)supported);
 
 	if (!strcmp(argv[1],"on")){
 		printf("Turning on LED\n");
@@ -71,8 +71,8 @@ int ledc_main(int argc, FAR char *argv[])
 	ret = ioctl(fd, ULEDIOC_SETALL, ledset);//setting
 	if (ret < 0) {
 		int errcode = errno;
-		printf("ledc: ERROR: ioctl(ULEDIOC_SUPPORTED) failed: %d\n",
-				errcode);
+		printf("ledc: ERROR: ioctl(ULEDIOC_SUPPORTED) failed: %s\n",
+				strerror(errcode));
 		return 1;
 	}
 	return ret;

@@ -1,0 +1,37 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config EXAMPLES_MPU6050
+	bool "MPU-6050 Test Application"
+	default n
+	depends on SENSORS_MPU6050
+	---help---
+		Enable the MPU-6050 test application.
+
+if EXAMPLES_MPU6050
+
+config EXAMPLES_MPU6050_PROGNAME
+	string "MPU6050 Test Program name"
+	default "mpu6050"
+	depends on BUILD_KERNEL
+	---help---
+		This is the name of the program that will be use when the NSH ELF
+		program is installed.
+
+config EXAMPLES_MPU6050_DEVNAME
+	string "MPU-6050 device file name"
+	default "/dev/mpu6050"
+	---help---
+		This is the name of device file name created by MPU6050 driver.
+
+config EXAMPLES_MPU6050_PRIORITY
+	int "MPU-6050 Test task priority"
+	default 100
+
+config EXAMPLES_MPU6050_STACKSIZE
+	int "MPU-6050 Test stack size"
+	default 2048
+
+endif
