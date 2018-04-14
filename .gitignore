@@ -21,4 +21,5 @@ cscope.out
 /boot_romfsimg.h
 /*/*/.built
 .DS_Store
-
+.project
+.cproject
