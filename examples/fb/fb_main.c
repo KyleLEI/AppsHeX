@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <string.h>
 
 #include <nuttx/nx/nx.h>
 #include <nuttx/nx/nxglib.h>
@@ -399,8 +400,26 @@ int fb_main(int argc, char *argv[])
 
   printf("Mapped FB: %p\n", state.fbmem);
 
+  memset(state.fbmem,0xFF,state.pinfo.fblen);
+  rect.pt1.x=0;
+  rect.pt1.y=0;
+  rect.pt2.x=127;
+  rect.pt2.y=63;
+  for(;;){
+#ifdef CONFIG_LCD_UPDATE
+  ret = ioctl(state.fd, FBIO_UPDATE,
+              (unsigned long)((uintptr_t)&rect));
+  if (ret < 0)
+    {
+      int errcode = errno;
+      fprintf(stderr, "ERROR: ioctl(FBIO_UPDATE) failed: %d\n",
+              errcode);
+    }
+#endif
+  sleep(1);
+  }
   /* Draw some rectangles */
-
+/*
   nsteps = 2 * (NCOLORS - 1) + 1;
   xstep  = state.vinfo.xres / nsteps;
   ystep  = state.vinfo.yres / nsteps;
@@ -422,10 +441,12 @@ int fb_main(int argc, char *argv[])
       draw_rect(&state, &rect, color);
       usleep(500*1000);
 
+
+
       width  -= (2 * xstep);
       height -= (2 * ystep);
     }
-
+*/
   printf("Test finished\n");
   munmap(state.fd, state.fbmem);
   close(state.fd);

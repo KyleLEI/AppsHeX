@@ -1,0 +1,11 @@
+############################################################################
+# apps/examples/ssd1306_seg/Make.defs
+# Adds selected applications to apps/ build
+#
+#   Author: Kyle Lei <leizhao2@gmail.com>
+#
+############################################################################
+
+ifeq ($(CONFIG_EXAMPLES_SSD1306_SEG),y)
+CONFIGURED_APPS += examples/ssd1306_seg
+endif

@@ -6,9 +6,9 @@
 #
 
 menu "File System Utilities"
-source "/Users/kyle/git/nutthex/apps/fsutils/flash_eraseall/Kconfig"
-source "/Users/kyle/git/nutthex/apps/fsutils/inifile/Kconfig"
-source "/Users/kyle/git/nutthex/apps/fsutils/mkfatfs/Kconfig"
-source "/Users/kyle/git/nutthex/apps/fsutils/mksmartfs/Kconfig"
-source "/Users/kyle/git/nutthex/apps/fsutils/passwd/Kconfig"
+source "/home/kyle/git/nutthex/apps/fsutils/flash_eraseall/Kconfig"
+source "/home/kyle/git/nutthex/apps/fsutils/inifile/Kconfig"
+source "/home/kyle/git/nutthex/apps/fsutils/mkfatfs/Kconfig"
+source "/home/kyle/git/nutthex/apps/fsutils/mksmartfs/Kconfig"
+source "/home/kyle/git/nutthex/apps/fsutils/passwd/Kconfig"
 endmenu # File System Utilities

@@ -1,0 +1,37 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config EXAMPLES_SSD1306_SEG
+	bool "SSD1306 alphanumeric driver example"
+	default n
+	depends on LCD_SSD1306_SEG
+	---help---
+		Enable the SSD1306 alphanumeric driver example
+
+if EXAMPLES_SSD1306_SEG
+
+config EXAMPLES_EXAMPLES_SSD1306_SEG_PROGNAME
+	string "Program name"
+	default "ssd1306_seg"
+	depends on BUILD_KERNEL
+	---help---
+		This is the name of the program that will be use when the NSH ELF
+		program is installed.
+
+config EXAMPLES_SSD1306_SEG_DEVNAME
+	string "SSD1306 alphanumeric device file name"
+	default "/dev/slcd0"
+	---help---
+		This is the name of device file name created by SSD1306 alphanumeric driver.
+		
+config EXAMPLES_EXAMPLES_SSD1306_SEG_PRIORITY
+	int "SSD1306 example task priority"
+	default 100
+
+config EXAMPLES_EXAMPLES_SSD1306_SEG_STACKSIZE
+	int "SSD1306 example stack size"
+	default 2048
+
+endif
