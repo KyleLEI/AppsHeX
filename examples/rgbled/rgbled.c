@@ -51,6 +51,10 @@
 #  define CONFIG_EXAMPLES_RGBLED_DEVNAME "/dev/rgbled0"
 #endif
 
+#ifndef CONFIG_EXAMPLES_RGBLED_STEP
+#  define CONFIG_EXAMPLES_RGBLED_STEP 5
+#endif
+
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -68,8 +72,8 @@ int rgbled_main(int argc, char *argv[])
   int red = 255;
   int green = 0;
   int blue = 0;
-  int sred = -1;
-  int sgreen = 1;
+  int sred = -CONFIG_EXAMPLES_RGBLED_STEP;
+  int sgreen = CONFIG_EXAMPLES_RGBLED_STEP;
   int sblue = 0;
   int fd;
   char buffer[8];
@@ -91,27 +95,27 @@ int rgbled_main(int argc, char *argv[])
     if (green == 255)
       {
         sred   = 0;
-        sgreen = -1;
-        sblue  = 1;
+        sgreen = -CONFIG_EXAMPLES_RGBLED_STEP;
+        sblue  = CONFIG_EXAMPLES_RGBLED_STEP;
       }
 
     if (blue == 255)
       {
-        sred   = 1;
+        sred   = CONFIG_EXAMPLES_RGBLED_STEP;
         sgreen = 0;
-        sblue  = -1;
+        sblue  = -CONFIG_EXAMPLES_RGBLED_STEP;
       }
 
     if (red == 255)
       {
-        sred   = -1;
+        sred   = -CONFIG_EXAMPLES_RGBLED_STEP;
         sblue  = 0;
-        sgreen = 1;
+        sgreen = CONFIG_EXAMPLES_RGBLED_STEP;
       }
 
     sprintf(buffer, "#%02X%02X%02X", red, green, blue); 
     (void)write(fd, buffer, 8);
-    usleep(5000);
+    usleep(5);
   }
 
   return 0;

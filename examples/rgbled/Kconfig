@@ -22,6 +22,14 @@ config EXAMPLES_RGBLED_PROGNAME
 	---help---
 		This is the name of the program that will be use when the NSH ELF
 		program is installed.
+		
+config EXAMPLES_RGBLED_STEP
+	int "Color step"
+	default 5
+	depends on BUILD_KERNEL
+	---help---
+		This determines the step at which the color of the LED will change.
+		A larger value means faster change.
 
 config EXAMPLES_RGBLED_PRIORITY
 	int "RGBLED task priority"
