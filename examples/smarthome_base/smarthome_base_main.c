@@ -1,5 +1,5 @@
 /****************************************************************************
- * examples/hello3300/hello3300_main.c
+ * examples/smarthome_base/smarthome_base_main.c
 
  *   Author: Kyle Lei <leizhao2@gmail.com>
 
@@ -18,29 +18,29 @@
 
 #include <netutils/esp8266.h>
 
-/****************************************************************************
- * Public Functions
- ****************************************************************************/
-extern int rgbled_main(int argc, char *argv[]);
-/****************************************************************************
- * hello_main
- ****************************************************************************/
-bool connected=false;
+#include "smarthome_base.h"
+
+sh_state_t g_sh_state = {
+	.remote_connected = false,
+	.rgb_mode = sh_RGB_BREATH
+};
 
 void connectedCB(int socket){
 	printf("!!! %d Connected !!!\n",socket);
-	connected=true;
+	g_sh_state.remote_connected=true;
+	g_sh_state.rgb_mode = sh_RGB_FLASH_BLUE;
 }
 
 void disconnectCB(int socket){
 	printf("!!! %d Disconnected !!!\n",socket);
-	connected=false;
+	g_sh_state.remote_connected=false;
+	g_sh_state.rgb_mode = sh_RGB_FLASH_RED;
 }
 
 #ifdef CONFIG_BUILD_KERNEL
 int main(int argc, FAR char *argv[])
 #else
-int hello3300_main(int argc, char *argv[])
+int smarthome_base_main(int argc, char *argv[])
 #endif
 {
   struct sockaddr_in serv_addr;
@@ -49,15 +49,17 @@ int hello3300_main(int argc, char *argv[])
 
   printf("Hello, 3300!!\n");
 
-  printf("Spawning rgbled_main\n");
-  task_create("rgbled_main", CONFIG_EXAMPLES_HELLO3300_PRIORITY,
-  	CONFIG_EXAMPLES_HELLO3300_STACKSIZE, rgbled_main, NULL);
-  printf("rgbled_main spawned\n");
+  printf("Spawning rgbled_daemon\n");
+//  task_create("smarthome_rgbled_main", CONFIG_EXAMPLES_SMARTHOME_BASE_PRIORITY,
+//		  CONFIG_EXAMPLES_SMARTHOME_BASE_STACKSIZE, smarthome_rgbled_daemon, NULL);
+  pthread_create(&g_sh_state.rgbled_thread,NULL,smarthome_rgbled_daemon,(void*)&g_sh_state);
+  printf("rgbled_daemon spawned\n");
 
   printf("Initializing ESP8266\n");
   lesp_initialize();
   lesp_soft_reset();
   printf("ESP8266 has been initialized\n");
+  g_sh_state.rgb_mode = sh_RGB_FLASH_GREEN;
 
   int sockfd=lesp_socket(PF_INET,SOCK_STREAM,0);
 
@@ -70,7 +72,7 @@ int hello3300_main(int argc, char *argv[])
 		  connectedCB,disconnectCB);
 
   do{
-	  	if(!connected||rsize<0) sleep(1);
+	  	if(!g_sh_state.remote_connected||rsize<0) sleep(1);
 		rsize = lesp_recv(sockfd, buff, sizeof(buff), 0); //returns -1 if waited too long
 		if(rsize>0){
 			printf("Received %d bytes: ", rsize);

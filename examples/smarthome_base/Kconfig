@@ -1,0 +1,30 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config EXAMPLES_SMARTHOME_BASE
+	bool "Smarthome base module"
+	default n
+	---help---
+		Enable the smarthome base module example
+
+if EXAMPLES_SMARTHOME_BASE
+
+config EXAMPLES_SMARTHOME_BASE_PROGNAME
+	string "Program name"
+	default "smarthome_base"
+	depends on BUILD_KERNEL && CONFIG_NETUTILS_ESP8266
+	---help---
+		This is the name of the program that will be use when the NSH ELF
+		program is installed.
+
+config EXAMPLES_SMARTHOME_BASE_PRIORITY
+	int "Base module task priority"
+	default 100
+
+config EXAMPLES_SMARTHOME_BASE_STACKSIZE
+	int "Base module stack size"
+	default 2048
+
+endif
