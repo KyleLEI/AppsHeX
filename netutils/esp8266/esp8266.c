@@ -148,6 +148,8 @@ typedef struct
   char            buf[BUF_ANS_LEN]; /* Last complete line received */
   lesp_ans_t      ans;              /* Last ans received (OK,FAIL or ERROR) */
   pthread_mutex_t mutex;
+  lesp_conn_cb_t  conn_cb;
+  lesp_closed_cb_t closed_cb;
 } lesp_worker_t;
 
 typedef struct
@@ -189,6 +191,8 @@ lesp_state_t g_lesp_state =
   .worker.running = false,
   .worker.ans     = lesp_eNONE,
   .worker.mutex   = PTHREAD_MUTEX_INITIALIZER,
+  .worker.conn_cb = NULL,
+  .worker.closed_cb = NULL,
   .ans            = lesp_eNONE,
 };
 
@@ -1309,8 +1313,21 @@ static void *lesp_worker(void *args)
                       unsigned int sockid = worker->rxbuf[0] - '0';
                       if (sockid < SOCKET_NBR)
                         {
-                          set_sock_closed(sockid);
+                    	  //i want to keep the socket alive for retries
+                          //set_sock_closed(sockid);
+
+                          if(g_lesp_state.worker.closed_cb!=NULL)
+                        	  g_lesp_state.worker.closed_cb(sockid);
                         }
+                    }
+                  else if ((rxlen == 9) &&
+                            (memcmp(worker->rxbuf+1, ",CONNECT", 8) == 0))
+                    {
+                      unsigned int sockid = worker->rxbuf[0] - '0';
+                      if (sockid < SOCKET_NBR && g_lesp_state.worker.conn_cb!=NULL)
+                      {
+                    	  g_lesp_state.worker.conn_cb(sockid);
+                      }
                     }
                   else
                     {
@@ -1409,7 +1426,7 @@ static inline int lesp_create_worker(int priority)
       ret = pthread_attr_getschedparam(&thread_attr, &param);
       if (ret >= 0)
         {
-          param.sched_priority += priority;
+          param.sched_priority = priority;
           ret = pthread_attr_setschedparam(&thread_attr, &param);
         }
       else
@@ -1551,7 +1568,7 @@ int lesp_soft_reset(void)
 
   pthread_mutex_lock(&g_lesp_state.mutex);
 
-  /* Rry to close opened reset */
+  /* Try to close opened reset */
 
   pthread_mutex_lock(&g_lesp_state.worker.mutex);
 
@@ -1590,12 +1607,15 @@ int lesp_soft_reset(void)
       ret = lesp_ask_ans_ok(lespTIMEOUT_MS, "AT+GMR\r\n");
     }
 
-  /* Enable the module to act as a “Station” */
-
+  /* Enable the module to act as a “Station”
+   * We are not using this part because the info has been written to
+   * the flash of ESP8266 already
+   */
+/*
   if (ret >= 0)
     {
       ret = lesp_ask_ans_ok(lespTIMEOUT_MS, "AT+CWMODE_CUR=1\r\n");
-    }
+    }*/
 
   /* Enable the multi connection */
 
@@ -1615,7 +1635,7 @@ int lesp_soft_reset(void)
 }
 
 /****************************************************************************
- * Name: lesp_soft_reset
+ * Name: lesp_ap_connect
  *
  * Description:
  *    reset esp8266 (command "AT+RST");
@@ -2148,7 +2168,7 @@ int lesp_socket(int domain, int type, int protocol)
   ret = -1;
   if (!g_lesp_state.is_initialized)
     {
-      ninfo("Esp8266 not initialized; can't list access points\n");
+      ninfo("Esp8266 not initialized; can't return socket\n");
       errno = ENETDOWN;
     }
   else
@@ -2231,6 +2251,85 @@ int lesp_closesocket(int sockfd)
   return 0;
 }
 
+/****************************************************************************
+ * Name:  lesp_bindlistenaccept
+ *
+ * Description:
+ *   Equivalent of POSIX bind, listen and accept for esp8266.
+ *   This is a non-standard interface, made to fit the esp8266 AT commands.
+ *   The goal is to setup a TCP server.
+ *
+ * Input Parameters:
+ *   sockfd   Socket descriptor of the socket to bind
+ *   addr     Socket local address
+ *   addrlen  Length of 'addr'
+ *   backlog  The maximum length the queue of pending connections may grow.
+ *            If a connection request arrives with the queue full, the client
+ *            may receive an error with an indication of ECONNREFUSED or,
+ *            if the underlying protocol supports retransmission, the request
+ *            may be ignored so that retries succeed.
+ *   lesp_conn_cb_t callback function when a client is connected, NULL if not used
+ *   lesp_closed_cb_t callback function when a client is disconnected, NULL if not used
+ *
+ * Returned Value:
+ *   A 0 on success; -1 on error.
+ *
+ ****************************************************************************/
+
+int lesp_bindlistenaccept(int sockfd,FAR const struct sockaddr *addr, socklen_t addrlen,
+		lesp_conn_cb_t in_conn_cb, lesp_closed_cb_t in_closed_cb)
+{
+  int ret = 0;
+  lesp_socket_t *sock;
+  struct sockaddr_in *in;
+  unsigned short port;
+
+  in = (struct sockaddr_in *)addr;
+  port = ntohs(in->sin_port);
+
+  DEBUGASSERT(in->sin_family == AF_INET);
+  DEBUGASSERT(addrlen == sizeof(struct sockaddr_in));
+  DEBUGASSERT(FLAGS_SOCK_TYPE_MASK & sock->flags==FLAGS_SOCK_TYPE_TCP);
+
+  pthread_mutex_lock(&g_lesp_state.mutex);
+
+  ninfo("Setting up server %d:%h...\n", sockfd,port);
+
+  ret = lesp_check();
+
+  if (ret >= 0)
+    {
+       pthread_mutex_lock(&g_lesp_state.worker.mutex);
+       sock = get_sock(sockfd);
+       if (sock == NULL)
+         {
+            ret = -1;
+         }
+    }
+
+  pthread_mutex_unlock(&g_lesp_state.worker.mutex);
+
+  if (ret >= 0)
+      {
+        ret = lesp_ask_ans_ok(lespTIMEOUT_MS, "AT+CIPSERVER=1,%d\r\n",port);
+        if (ret < 0)
+          {
+            errno = EIO;
+          }
+      }
+
+  g_lesp_state.worker.conn_cb=in_conn_cb;
+  g_lesp_state.worker.closed_cb=in_closed_cb;
+  pthread_mutex_unlock(&g_lesp_state.mutex);
+
+  if (ret < 0)
+    {
+       nerr("ERROR: Setup server %d.\n", sockfd);
+       return -1;
+    }
+
+  return 0;
+}
 /****************************************************************************
  * Name:  lesp_bind
  *
@@ -2390,9 +2489,9 @@ int lesp_listen(int sockfd, int backlog)
 
   if (ret >= 0)
     {
-      nerr("ERROR: Not implemented %s\n", __func__);
-      errno = EIO;
-      ret = -1;
+	  nerr("ERROR: Not implemented %s\n", __func__);
+	  errno = EIO;
+	  ret = -1;
     }
 
   pthread_mutex_unlock(&g_lesp_state.mutex);

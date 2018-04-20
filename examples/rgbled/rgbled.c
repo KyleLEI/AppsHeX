@@ -42,6 +42,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdbool.h>
+
+static bool g_rgbled_daemon_started = false;
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -66,7 +69,7 @@
 #ifdef CONFIG_BUILD_KERNEL
 int main(int argc, FAR char *argv[])
 #else
-int rgbled_main(int argc, char *argv[])
+int rgbled_daemon(int argc, char *argv[])
 #endif
 {
   int red = 255;
@@ -119,4 +122,27 @@ int rgbled_main(int argc, char *argv[])
   }
 
   return 0;
+}
+
+int rgbled_main(int argc, char *argv[]){
+	int ret;
+
+	printf("rgbled_main: Starting the rgbled_daemon\n");
+	if (g_rgbled_daemon_started) {
+		printf("rgb_main: rgbled_daemon already running\n");
+		return 0;
+	}
+	ret = task_create("rgbled_daemon", CONFIG_EXAMPLES_RGBLED_PRIORITY,
+	CONFIG_EXAMPLES_RGBLED_STACKSIZE, rgbled_daemon, NULL);
+
+	if (ret < 0) {
+		printf("rgbled_main: ERROR: Failed to start rgbled_daemon\n");
+		return 1;
+	}
+
+	printf("rgbled_main: rgbled_daemon started\n");
+	g_rgbled_daemon_started=true;
+
+	return 0;
+
 }

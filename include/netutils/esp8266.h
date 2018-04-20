@@ -112,6 +112,13 @@ int lesp_list_access_points(lesp_cb_t cb);
 
 int lesp_socket(int domain, int type, int protocol);
 int lesp_closesocket(int sockfd);
+
+typedef void (*lesp_conn_cb_t)(int sockfd);
+typedef void (*lesp_closed_cb_t)(int sockfd);
+
+int lesp_bindlistenaccept(int sockfd,FAR const struct sockaddr *addr, socklen_t addrlen,
+		lesp_conn_cb_t connected_callback, lesp_closed_cb_t closed_callback);
+
 int lesp_bind(int sockfd, FAR const struct sockaddr *addr, socklen_t addrlen);
 int lesp_connect(int sockfd, FAR const struct sockaddr *addr, socklen_t addrlen);
 int lesp_listen(int sockfd, int backlog);

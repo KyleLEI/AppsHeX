@@ -14,7 +14,7 @@ if EXAMPLES_HELLO3300
 config EXAMPLES_HELLO3300_PROGNAME
 	string "Program name"
 	default "hello3300"
-	depends on BUILD_KERNEL
+	depends on BUILD_KERNEL && CONFIG_NETUTILS_ESP8266
 	---help---
 		This is the name of the program that will be use when the NSH ELF
 		program is installed.
