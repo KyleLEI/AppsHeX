@@ -15,72 +15,135 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
+#include <string.h>
 
 #include <netutils/esp8266.h>
 
 #include "smarthome_base.h"
 
-sh_state_t g_sh_state = {
-	.remote_connected = false,
-	.rgb_mode = sh_RGB_BREATH
-};
+/****************************************************************************
+ * Pre-processor Definitions
+ ****************************************************************************/
+#define SH_MAIN "smarthome_base_main: "
 
-void connectedCB(int socket){
-	printf("!!! %d Connected !!!\n",socket);
-	g_sh_state.remote_connected=true;
-	g_sh_state.rgb_mode = sh_RGB_FLASH_BLUE;
+/****************************************************************************
+ * Private Data
+ ****************************************************************************/
+sh_state_t g_sh_state =
+  {
+      .rgb_mode = sh_RGB_BREATH,
+
+      .gpofd =
+	{
+	    -1 },
+
+      .remote_connected = false };
+
+/****************************************************************************
+ * Private Functions
+ ****************************************************************************/
+void
+connectedCB (int socket)
+{
+  printf ("!!! %d Connected !!!\n", socket);
+  g_sh_state.remote_connected = true;
+  g_sh_state.rgb_mode = sh_RGB_FLASH_BLUE;
 }
 
-void disconnectCB(int socket){
-	printf("!!! %d Disconnected !!!\n",socket);
-	g_sh_state.remote_connected=false;
-	g_sh_state.rgb_mode = sh_RGB_FLASH_RED;
+void
+disconnectCB (int socket)
+{
+  printf ("!!! %d Disconnected !!!\n", socket);
+  g_sh_state.remote_connected = false;
+  g_sh_state.rgb_mode = sh_RGB_FLASH_RED;
 }
 
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
+/****************************************************************************
+ * smarthome_base_main
+ ****************************************************************************/
 #ifdef CONFIG_BUILD_KERNEL
 int main(int argc, FAR char *argv[])
 #else
-int smarthome_base_main(int argc, char *argv[])
+int
+smarthome_base_main (int argc, char *argv[])
 #endif
 {
+  int ret;
+  int gpio_id;
   struct sockaddr_in serv_addr;
-  char buff[128]={0};
-  ssize_t rsize=0;
+  char buff[128] =
+    {
+	0 };
+  ssize_t rsize = 0;
 
-  printf("Hello, 3300!!\n");
+  printf (SH_MAIN "Spawning rgbled_daemon\n");
+  pthread_create (&g_sh_state.rgbled_thread, NULL, smarthome_rgbled_daemon,
+		  (void*) &g_sh_state);
+  printf (SH_MAIN "rgbled_daemon spawned\n\n");
 
-  printf("Spawning rgbled_daemon\n");
-//  task_create("smarthome_rgbled_main", CONFIG_EXAMPLES_SMARTHOME_BASE_PRIORITY,
-//		  CONFIG_EXAMPLES_SMARTHOME_BASE_STACKSIZE, smarthome_rgbled_daemon, NULL);
-  pthread_create(&g_sh_state.rgbled_thread,NULL,smarthome_rgbled_daemon,(void*)&g_sh_state);
-  printf("rgbled_daemon spawned\n");
+  printf (SH_MAIN "Initializing GPIO\n");
+  ret = smarthome_initialize_gpio (&g_sh_state);
+  if (ret < 0)
+    {
+      printf (SH_MAIN "ERROR initializing GPIO\n");
+      return 1;
+    }
+  printf (SH_MAIN "GPIO initialized\n\n");
 
-  printf("Initializing ESP8266\n");
-  lesp_initialize();
-  lesp_soft_reset();
-  printf("ESP8266 has been initialized\n");
-  g_sh_state.rgb_mode = sh_RGB_FLASH_GREEN;
+  printf (SH_MAIN "Initializing ESP8266\n");
+  lesp_initialize (); /* ESP8266 worker thread spawned inside */
+  lesp_soft_reset ();
+  printf (SH_MAIN "ESP8266 initialized\n\n");
 
-  int sockfd=lesp_socket(PF_INET,SOCK_STREAM,0);
-
+  int sockfd = lesp_socket (PF_INET, SOCK_STREAM, 0);
 
   serv_addr.sin_family = PF_INET;
   serv_addr.sin_addr.s_addr = INADDR_ANY;
-  serv_addr.sin_port = htons(233);
+  serv_addr.sin_port = htons (233);
 
-  lesp_bindlistenaccept(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr),
-		  connectedCB,disconnectCB);
+  lesp_bindlistenaccept (sockfd, (struct sockaddr *) &serv_addr,
+			 sizeof(serv_addr), connectedCB, disconnectCB);
 
-  do{
-	  	if(!g_sh_state.remote_connected||rsize<0) sleep(1);
-		rsize = lesp_recv(sockfd, buff, sizeof(buff), 0); //returns -1 if waited too long
-		if(rsize>0){
-			printf("Received %d bytes: ", rsize);
-			fflush(stdout);
-			write(1, buff, rsize);
-			printf("\n");
-		}
-  }while(1);
+  g_sh_state.rgb_mode = sh_RGB_FLASH_GREEN;
+
+  do
+    {
+      if (!g_sh_state.remote_connected || rsize < 0)
+	sleep (1);
+      rsize = lesp_recv (sockfd, (uint8_t *) buff, sizeof(buff), 0); //returns -1 if waited too long
+      if (rsize > 0)
+	{
+	  printf ("Received %d bytes: ", rsize);
+	  fflush (stdout);
+	  write (1, buff, rsize);
+	  if (memcmp (buff, "GPIO_SET", 8) == 0)
+	    {
+	      g_sh_state.rgb_mode = sh_RGB_FLASH_BLUE;
+	      gpio_id = buff[8] - '0';
+	      printf ("Setting GPIO %d", gpio_id);
+	      ret = smarthome_write_gpio (&g_sh_state, gpio_id, true);
+	      if (ret < 0)
+		printf (SH_MAIN "Failed to write gpio %d\n", gpio_id);
+
+	    }
+	  else if (memcmp (buff, "GPIO_RESET", 10) == 0)
+	    {
+	      g_sh_state.rgb_mode = sh_RGB_FLASH_BLUE;
+	      gpio_id = buff[10] - '0';
+	      printf ("Resetting GPIO %d", gpio_id);
+	      ret = smarthome_write_gpio (&g_sh_state, gpio_id, false);
+	      if (ret < 0)
+		printf (SH_MAIN "Failed to write gpio %d\n", gpio_id);
+	    }
+	  printf ("\n");
+	}
+    }
+  while (1);
 
   return 0;
 }

@@ -19,7 +19,7 @@ STACKSIZE = $(CONFIG_EXAMPLES_SMARTHOME_BASE_STACKSIZE)
 # Hello, World! Example
 
 ASRCS =
-CSRCS = smarthome_rgbled_daemon.c
+CSRCS = smarthome_rgbled_daemon.c smarthome_gpio.c
 MAINSRC = smarthome_base_main.c
 
 CONFIG_EXAMPLES_SMARTHOME_BASE_PROGNAME ?= smarthome_base$(EXEEXT)
