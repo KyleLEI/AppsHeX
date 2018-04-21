@@ -21,6 +21,7 @@
  * Pre-processor Definitions
  ****************************************************************************/
 #define SH_NUM_RELAYS 4
+#define SH_NUM_REG_CARDS 8
 
 /****************************************************************************
  * Public Types
@@ -45,6 +46,18 @@ typedef struct
 
   int gpofd[SH_NUM_RELAYS];
 
+  /* SLCD related */
+
+  int slcdfd;
+
+  /* RFID related */
+
+  pthread_t rfid_thread;
+  int rfidfd;
+  bool should_read;
+  char cards[SH_NUM_REG_CARDS][8];
+  int card_count;
+
   /* Wireless related */
 
   bool remote_connected;
@@ -59,8 +72,22 @@ typedef struct
 
 void*
 smarthome_rgbled_daemon (void* sh_state);
+void*
+smarthome_rfid_daemon (void* sh_state);
 
-int smarthome_initialize_gpio(sh_state_t* sh_state);
-int smarthome_write_gpio(sh_state_t* sh_state, int gpio_id, bool value);
+int
+smarthome_initialize_gpio (sh_state_t* sh_state);
+int
+smarthome_write_gpio (sh_state_t* sh_state, int gpio_id, bool value);
+
+int
+smarthome_initialize_slcd (sh_state_t* sh_state);
+int
+smarthome_write_slcd (sh_state_t* sh_state, char* str, size_t strlen);
+
+int
+smarthome_initialize_rfid (sh_state_t* sh_state);
+int
+smarthome_register_card (sh_state_t* sh_state);
 
 #endif /* __EXAMPLES_SMARTHOME_BASE_SMARTHOME_BASE_H */

@@ -61,16 +61,20 @@ smarthome_write_gpio (sh_state_t* sh_state, int gpio_id, bool value)
 {
   int ret;
   int* fds = sh_state->gpofd;
-  bool invalue;
-  int fd = fds[gpio_id];
 
+  if (gpio_id < 0 || gpio_id >= SH_NUM_RELAYS)
+    {
+      printf ("Illegal id: %d\n", gpio_id);
+      return -1;
+    }
+
+  int fd = fds[gpio_id];
   if (fd < 0)
     {
       printf ("Illegal fd: %d\n", fd);
       return -1;
     }
 
-  printf ("  Writing:       Value=%u\n", (unsigned int) value);
   ret = ioctl (fd, GPIOC_WRITE, (unsigned long) value);
   if (ret < 0)
     {
@@ -80,18 +84,6 @@ smarthome_write_gpio (sh_state_t* sh_state, int gpio_id, bool value)
       return -1;
     }
 
-  /* Re-read the pin value */
-
-  ret = ioctl (fd, GPIOC_READ, (unsigned long) ((uintptr_t) &invalue));
-  if (ret < 0)
-    {
-      int errcode = errno;
-      fprintf (stderr, "ERROR: Failed to re-read value from fd %d: %d\n", fd,
-	       errcode);
-      return -1;
-    }
-
-  printf ("  Verify:        Value=%u\n", (unsigned int) invalue);
 
   return 0;
 }

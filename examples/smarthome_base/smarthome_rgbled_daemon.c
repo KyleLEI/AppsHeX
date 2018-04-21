@@ -56,7 +56,7 @@ smarthome_rgbled_daemon (void* args)
     {
       printf ("Error opening %s!\n",
       CONFIG_EXAMPLES_SMARTHOME_BASE_RGBLED_DEVNAME);
-      return -1;
+      return NULL;
     }
 
   while (1)
