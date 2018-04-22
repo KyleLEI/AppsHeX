@@ -42,7 +42,7 @@ sh_state_t g_sh_state =
       .slcdfd = -1,
 
       .rfidfd = -1,
-      .should_read = false,
+      .rfid_mode = sh_RFID_IDLE,
       .cards =
 	{ },
       .card_count = 0,
@@ -96,12 +96,12 @@ smarthome_base_main (int argc, char *argv[])
   ssize_t rsize = 0;
 
   printf (SH_MAIN "Mounting FS\n");
-  ret = mount("/dev/smart0p0","/mnt","smartfs",0,NULL);
+  ret = mount ("/dev/smart0p0", "/mnt", "smartfs", 0, NULL);
   if (ret < 0)
-      {
-        printf (SH_MAIN "ERROR mounting FS\n");
-        return 1;
-      }
+    {
+      printf (SH_MAIN "ERROR mounting FS\n");
+      return 1;
+    }
   printf (SH_MAIN "FS Mounted\n");
 
   printf (SH_MAIN "Initializing SLCD\n");
@@ -166,7 +166,7 @@ smarthome_base_main (int argc, char *argv[])
 
   smarthome_write_slcd (&g_sh_state, waiting_msg, sizeof(waiting_msg));
   g_sh_state.rgb_mode = sh_RGB_FLASH_GREEN;
-  g_sh_state.should_read = true;/* start reading RFID*/
+  g_sh_state.rfid_mode = sh_RFID_READ;/* start reading RFID*/
 
   do
     {
@@ -199,13 +199,17 @@ smarthome_base_main (int argc, char *argv[])
 	      if (ret < 0)
 		printf (SH_MAIN "Failed to write gpio %d\n", gpio_id);
 	    }
-	  else if (memcmp (buff, "REG_CARD", 8) == 0)
+	  else if (memcmp (buff, "CARD_REG", 8) == 0)
 	    {
 	      g_sh_state.rgb_mode = sh_RGB_FLASH_BLUE;
 	      printf ("Registering new card\n");
-	      ret = smarthome_register_card (&g_sh_state);
-	      if (ret < 0)
-		printf (SH_MAIN "Failed to register new card\n");
+	      g_sh_state.rfid_mode = sh_RFID_REG_CARD;
+	    }
+	  else if (memcmp (buff, "CARD_DEL", 8) == 0)
+	    {
+	      g_sh_state.rgb_mode = sh_RGB_FLASH_BLUE;
+	      printf ("Registering new card\n");
+	      g_sh_state.rfid_mode = sh_RFID_DEL_CARDS;
 	    }
 	  printf ("\n");
 	}

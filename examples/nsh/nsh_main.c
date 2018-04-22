@@ -185,9 +185,9 @@ int nsh_main(int argc, char *argv[])
 #endif
 
 #ifdef CONFIG_EXAMPLES_SMARTHOME_BASE
-  //task_create("smarthome_base", CONFIG_EXAMPLES_SMARTHOME_BASE_PRIORITY,
-//	      CONFIG_EXAMPLES_SMARTHOME_BASE_STACKSIZE, smarthome_base_main,
-//                    NULL);
+  task_create("smarthome_base", CONFIG_EXAMPLES_SMARTHOME_BASE_PRIORITY,
+      CONFIG_EXAMPLES_SMARTHOME_BASE_STACKSIZE, smarthome_base_main,
+      NULL);
 #endif
   /* If the serial console front end is selected, then run it on this thread */
 

@@ -27,8 +27,52 @@
 #  define CONFIG_EXAMPLES_SMARTHOME_BASE_RFID_DEVNAME "/dev/rfid0"
 #endif
 
+#ifndef CONFIG_EXAMPLES_SMARTHOME_BASE_RFID_FILENAME
+#  define CONFIG_EXAMPLES_SMARTHOME_BASE_RFID_FILENAME "/mnt/userid.txt"
+#endif
+
 /****************************************************************************
- * Public Functions
+ * Private function
+ ****************************************************************************/
+int
+smarthome_rfid_save_cardid (sh_state_t* sh_state)
+{
+  int fd;
+  int i;
+  char buff[8];
+
+  fd = open (CONFIG_EXAMPLES_SMARTHOME_BASE_RFID_FILENAME,
+	     O_WRONLY | O_CREAT | O_TRUNC);
+  if (fd < 0)
+    return -1;
+
+  for (i = 0; i < sh_state->card_count; i++)
+    {
+      write (fd, sh_state->cards[i], 8);
+    }
+
+  printf ("Finished writing to flash, %d id wrote.\n", sh_state->card_count);
+  close (fd);
+
+  return 0;
+}
+
+int
+smarthome_rfid_clear_cardid (sh_state_t* sh_state)
+{
+  int ret;
+
+  ret = remove (CONFIG_EXAMPLES_SMARTHOME_BASE_RFID_FILENAME);
+  if (ret < 0)
+    return -1;
+
+  sh_state->card_count = 0;
+  printf ("Successfully cleared all cardid\n");
+  return 0;
+}
+
+/****************************************************************************
+ * Private data
  ****************************************************************************/
 char access_granted_msg[] = "\n\nAccess Granted\nWelcome home!";
 char access_denied_msg[] = "\n\nAccess Denied\n";
@@ -36,6 +80,9 @@ char reg_max_msg[] = "\n\nSorry no more\nnew cards allowed";
 char reg_success_msg[] = "\n\nNew card is\nregistered";
 char reg_abort_msg[] = "\n\nFailed to read\ncard";
 
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
 /****************************************************************************
  * rfid_readuid_main
  ****************************************************************************/
@@ -62,7 +109,7 @@ smarthome_rfid_daemon (void* args)
   char buffer[10];
   sh_state_t* m_state = (sh_state_t*) args;
   int fd = m_state->rfidfd;
-  bool* should_read = &m_state->should_read;
+  sh_RFID_mode_t* rfid_mode = &m_state->rfid_mode;
 
   if (fd < 0)
     {
@@ -71,14 +118,15 @@ smarthome_rfid_daemon (void* args)
     }
   while (1)
     {
-      if (*should_read)
+      switch (*rfid_mode)
 	{
+	case sh_RFID_READ:
 	  ret = read (fd, buffer, 11);
 	  if (ret == 11)
 	    {
 	      printf ("rfid_daemon: RFID CARD UID = %s\n", buffer);
 	      /* Loop through saved cards to see if this card is allowed */
-	      for (i = 0; i < SH_NUM_REG_CARDS; i++)
+	      for (i = 0; i < m_state->card_count; i++)
 		{
 		  if (memcmp ((buffer + 2), m_state->cards[i], 8) == 0)
 		    {
@@ -102,8 +150,47 @@ smarthome_rfid_daemon (void* args)
 	    }
 	  else
 	    {
-	      printf ("rfid_daemon: Unknown error or same card\n");
+	      printf ("rfid_daemon: Unknown error\n");
 	    }
+	  break;
+
+	case sh_RFID_REG_CARD:
+	  if (m_state->card_count > SH_NUM_REG_CARDS)
+	    {
+	      smarthome_write_slcd (m_state, reg_max_msg, sizeof(reg_max_msg));
+	      m_state->rfid_mode = sh_RFID_READ;
+	      break;
+	    }
+	  ret = read (fd, buffer, 11);
+	  if (ret == 11)
+	    {
+	      printf ("rfid_reg: RFID CARD UID = %s\n", buffer);
+	      memcpy (m_state->cards[m_state->card_count], buffer + 2, 8);
+	      m_state->card_count++;
+	      smarthome_write_slcd (m_state, reg_success_msg,
+				    sizeof(reg_success_msg));
+
+	      smarthome_rfid_save_cardid (m_state);
+	      m_state->rfid_mode = sh_RFID_READ;
+	    }
+	  else
+	    {
+	      printf ("rfid_reg: Failed to read card\n");
+	      smarthome_write_slcd (m_state, reg_abort_msg,
+				    sizeof(reg_abort_msg));
+	      m_state->rfid_mode = sh_RFID_READ;
+	    }
+
+	  break;
+
+	case sh_RFID_DEL_CARDS:
+	  smarthome_rfid_clear_cardid (m_state);
+	  m_state->rfid_mode = sh_RFID_READ;
+	  break;
+
+	case sh_RFID_IDLE:
+	default:
+	  break;
 	}
 
       /* Wait 500ms before trying again */
@@ -114,60 +201,17 @@ smarthome_rfid_daemon (void* args)
 }
 
 int
-smarthome_register_card (sh_state_t* sh_state)
-{
-  int ret;
-  int i;
-  int fd = sh_state->rfidfd;
-  char buffer[10];
-
-  sh_state->should_read = false;
-  if (sh_state->card_count > SH_NUM_REG_CARDS)
-    {
-      smarthome_write_slcd (sh_state, reg_max_msg, sizeof(reg_max_msg));
-      sh_state->should_read = true;
-      return -1;
-    }
-
-  ret = read (fd, buffer, 11);
-  if (ret == 11)
-    {
-      printf ("rfid_reg: RFID CARD UID = %s\n", buffer);
-      memcpy (sh_state->cards[sh_state->card_count], buffer + 2, 8);
-      sh_state->card_count++;
-      smarthome_write_slcd (sh_state, reg_success_msg, sizeof(reg_success_msg));
-      sh_state->should_read = true;
-    }
-  else
-    {
-      printf ("rfid_reg: Failed to read card\n");
-      smarthome_write_slcd (sh_state, reg_abort_msg, sizeof(reg_abort_msg));
-      sh_state->should_read = true;
-      return -1;
-    }
-
-  return 0;
-}
-
-int
 smarthome_read_cardid_from_flash (sh_state_t* sh_state)
 {
   int fd;
   char buff[8];
 
-  fd = open ("/mnt/userid.txt", O_RDONLY);
+  fd = open (CONFIG_EXAMPLES_SMARTHOME_BASE_RFID_FILENAME, O_RDONLY);
   if (fd < 0)
     return -1;
 
-  while (read (fd, buff, 8))
-    {
-      printf ("rfid_flash_read: read ");
-      fflush (stdout);
-      write (1, buff, 8);
-      printf (" from flash\n");
-
-      memcpy (sh_state->cards[sh_state->card_count++], buff, 8);
-    }
+  while (read (fd, buff, 8) == 8)
+    memcpy (sh_state->cards[sh_state->card_count++], buff, 8);
 
   printf ("Finished reading from flash, %d id read.\n", sh_state->card_count);
   close (fd);

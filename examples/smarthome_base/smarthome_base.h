@@ -35,6 +35,14 @@ typedef enum
   sh_RGB_FLASH_GREEN = 3
 } sh_RGB_mode_t;
 
+typedef enum
+{
+  sh_RFID_IDLE = 0,
+  sh_RFID_READ = 1,
+  sh_RFID_REG_CARD = 2,
+  sh_RFID_DEL_CARDS = 3
+} sh_RFID_mode_t;
+
 typedef struct
 {
   /* RGBLED related */
@@ -54,7 +62,7 @@ typedef struct
 
   pthread_t rfid_thread;
   int rfidfd;
-  bool should_read;
+  sh_RFID_mode_t rfid_mode;
   char cards[SH_NUM_REG_CARDS][8];
   int card_count;
 
@@ -89,7 +97,5 @@ int
 smarthome_initialize_rfid (sh_state_t* sh_state);
 int
 smarthome_read_cardid_from_flash (sh_state_t* sh_state);
-int
-smarthome_register_card (sh_state_t* sh_state);
 
 #endif /* __EXAMPLES_SMARTHOME_BASE_SMARTHOME_BASE_H */
