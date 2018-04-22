@@ -148,3 +148,29 @@ smarthome_register_card (sh_state_t* sh_state)
 
   return 0;
 }
+
+int
+smarthome_read_cardid_from_flash (sh_state_t* sh_state)
+{
+  int fd;
+  char buff[8];
+
+  fd = open ("/mnt/userid.txt", O_RDONLY);
+  if (fd < 0)
+    return -1;
+
+  while (read (fd, buff, 8))
+    {
+      printf ("rfid_flash_read: read ");
+      fflush (stdout);
+      write (1, buff, 8);
+      printf (" from flash\n");
+
+      memcpy (sh_state->cards[sh_state->card_count++], buff, 8);
+    }
+
+  printf ("Finished reading from flash, %d id read.\n", sh_state->card_count);
+  close (fd);
+
+  return 0;
+}

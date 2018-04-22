@@ -17,6 +17,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <sys/mount.h>
 
 #include <netutils/esp8266.h>
 
@@ -43,9 +44,8 @@ sh_state_t g_sh_state =
       .rfidfd = -1,
       .should_read = false,
       .cards =
-	{
-	    "04718E00" },
-      .card_count = 1,
+	{ },
+      .card_count = 0,
 
       .remote_connected = false };
 
@@ -95,6 +95,15 @@ smarthome_base_main (int argc, char *argv[])
 	0 };
   ssize_t rsize = 0;
 
+  printf (SH_MAIN "Mounting FS\n");
+  ret = mount("/dev/smart0p0","/mnt","smartfs",0,NULL);
+  if (ret < 0)
+      {
+        printf (SH_MAIN "ERROR mounting FS\n");
+        return 1;
+      }
+  printf (SH_MAIN "FS Mounted\n");
+
   printf (SH_MAIN "Initializing SLCD\n");
   ret = smarthome_initialize_slcd (&g_sh_state);
   if (ret < 0)
@@ -126,6 +135,15 @@ smarthome_base_main (int argc, char *argv[])
       return 1;
     }
   printf (SH_MAIN "RFID initialized\n\n");
+
+  printf (SH_MAIN "Reading RFID userid from flash\n");
+  ret = smarthome_read_cardid_from_flash (&g_sh_state);
+  if (ret < 0)
+    {
+      printf (SH_MAIN "ERROR reading RFID userid\n");
+      return 1;
+    }
+  printf (SH_MAIN "RFID userid read\n\n");
 
   printf (SH_MAIN "Spawning RFID daemon\n");
   pthread_create (&g_sh_state.rfid_thread, NULL, smarthome_rfid_daemon,

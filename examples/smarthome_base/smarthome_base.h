@@ -88,6 +88,8 @@ smarthome_write_slcd (sh_state_t* sh_state, char* str, size_t strlen);
 int
 smarthome_initialize_rfid (sh_state_t* sh_state);
 int
+smarthome_read_cardid_from_flash (sh_state_t* sh_state);
+int
 smarthome_register_card (sh_state_t* sh_state);
 
 #endif /* __EXAMPLES_SMARTHOME_BASE_SMARTHOME_BASE_H */
