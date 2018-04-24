@@ -6,7 +6,7 @@
  */
 
 #ifndef __EXAMPLES_SMARTHOME_BASE_SMARTHOME_BASE_H
-#define __EXAMPLES_SMARTHOME_BASE_SMARTHOME_BASE_H
+#define __EXAMPLES_SMARTHOME_BASE_SMARTHOME_BASE_H 1
 
 /****************************************************************************
  * Included Files
