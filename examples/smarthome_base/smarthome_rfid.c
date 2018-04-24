@@ -208,7 +208,7 @@ smarthome_read_cardid_from_flash (sh_state_t* sh_state)
 
   fd = open (CONFIG_EXAMPLES_SMARTHOME_BASE_RFID_FILENAME, O_RDONLY);
   if (fd < 0)
-    return -1;
+    return 0;
 
   while (read (fd, buff, 8) == 8)
     memcpy (sh_state->cards[sh_state->card_count++], buff, 8);
