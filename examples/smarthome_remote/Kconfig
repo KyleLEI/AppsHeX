@@ -1,0 +1,30 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config EXAMPLES_SMARTHOME_REMOTE
+	bool "Smarthome remote module"
+	default n
+	---help---
+		Enable the smarthome remote module example
+
+if EXAMPLES_SMARTHOME_REMOTE
+
+config EXAMPLES_SMARTHOME_ROMOTE_PROGNAME
+	string "Program name"
+	default "smarthome_remote"
+	depends on BUILD_KERNEL && CONFIG_NETUTILS_ESP8266
+	---help---
+		This is the name of the program that will be use when the NSH ELF
+		program is installed.
+
+config EXAMPLES_SMARTHOME_REMOTE_PRIORITY
+	int "Remote module task priority"
+	default 100
+
+config EXAMPLES_SMARTHOME_REMOTE_STACKSIZE
+	int "Remote module stack size"
+	default 2048
+
+endif

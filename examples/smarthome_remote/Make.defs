@@ -1,0 +1,11 @@
+############################################################################
+# apps/examples/smarthome_remote/Make.defs
+# Adds selected applications to apps/ build
+#
+#   Author: Kyle Lei <leizhao2@gmail.com>
+#
+############################################################################
+
+ifeq ($(CONFIG_EXAMPLES_SMARTHOME_REMOTE),y)
+CONFIGURED_APPS += examples/smarthome_remote
+endif
