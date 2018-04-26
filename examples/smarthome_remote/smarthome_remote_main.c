@@ -70,7 +70,7 @@ smarthome_remote_main (int argc, char *argv[])
 
   printf("Opening USART\n");
   /* Open ESP8266 USART(tty) driver */
-  espfd = open ("/dev/ttyS1", O_RDWR);
+  espfd = open ("/dev/ttyS1", O_RDWR| O_NONBLOCK);
   if (espfd < 1)
     return -1;
   printf("USART opened\n");
