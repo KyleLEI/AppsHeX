@@ -14,11 +14,20 @@
 
 #include <nuttx/config.h>
 
+#include <stdbool.h>
+
 /****************************************************************************
  * Public Function Prototypes
  ****************************************************************************/
 
+/* OLED-related */
 void smarthome_clear_oled(int oledfd);
 void smarthome_draw_hkust_logo(int oledfd);
+void smarthome_draw_light_on(int oledfd);
+void smarthome_draw_light_off(int oledfd);
+void smarthome_draw_rfid(int oledfd);
+
+/* ESP8266-related */
+bool smarthome_esp8266_init(int espfd);
 
 #endif /* __EXAMPLES_SMARTHOME_REMOTE_SMARTHOME_REMOTE_H */

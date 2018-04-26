@@ -1,8 +1,9 @@
 /****************************************************************************
  * examples/smarthome_remote/smarthome_remote_main.c
-
+ *
  *   Author: Kyle Lei <leizhao2@gmail.com>
-
+ *
+ * I'm removing debug messages to save the precious memory on STM32F103C8
  ****************************************************************************/
 
 /****************************************************************************
@@ -12,12 +13,8 @@
 #include <nuttx/config.h>
 
 #include <fcntl.h>
-#include <stdio.h>
-#include <stdbool.h>
 #include <unistd.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <string.h>
+#include <stdbool.h>
 
 #include <nuttx/sensors/apds9960.h>
 #include "smarthome_remote.h"
@@ -49,43 +46,43 @@ smarthome_remote_main (int argc, char *argv[])
 {
   int oledfd;
   int apdsfd;
+  int espfd;
 
-  //printf (SH_MAIN "Initializing OLED\n");
+  /* Open OLED driver*/
   oledfd = open ("/dev/slcd0", O_RDWR | O_NONBLOCK);
   if (oledfd < 0)
-    {
-      //int errcode = errno;
-      //printf (SH_MAIN "ERROR: Failed to initialize OLED: %d\n", errcode);
-      return -1;
-    }
-  //printf (SH_MAIN "OLED initialized\n");
+    return -1;
 
-  smarthome_clear_oled(oledfd);
+  smarthome_clear_oled (oledfd);
   smarthome_draw_hkust_logo (oledfd);
 
-  open_msg1[0]=0;
-  open_msg1[1]=0;
+  open_msg1[0] = 0;
+  open_msg1[1] = 0;
   write (oledfd, open_msg1, sizeof(open_msg1));
-  open_msg2[0]=0;
-  open_msg2[1]=1;
+  open_msg2[0] = 0;
+  open_msg2[1] = 1;
   write (oledfd, open_msg2, sizeof(open_msg2));
 
-  //printf (SH_MAIN "Initializing APDS-9960\n");
+  /* Open APDS-9960 driver */
   apdsfd = open ("/dev/gest0", O_RDONLY | O_NONBLOCK);
   if (apdsfd < 0)
-    {
-      //int errcode = errno;
-      //printf (SH_MAIN "ERROR: Failed to initialize APDS-9960: %d\n", errcode);
-      return -1;
-    }
-  //printf (SH_MAIN "APDS-9960 initialized\n");
+    return -1;
 
-  //printf (SH_MAIN "Initializing ESP8266\n");
-  //printf (SH_MAIN "ESP8266 initialized\n\n");
+  printf("Opening USART\n");
+  /* Open ESP8266 USART(tty) driver */
+  espfd = open ("/dev/ttyS1", O_RDWR);
+  if (espfd < 1)
+    return -1;
+  printf("USART opened\n");
 
-  connecting_msg[0]=0;
-  connecting_msg[1]=1;
+  connecting_msg[0] = 0;
+  connecting_msg[1] = 1;
   write (oledfd, connecting_msg, sizeof(connecting_msg));
+
+  if(!smarthome_esp8266_init(espfd))
+    return -1;
+  printf("ESP8266 Initialized\n");
+
 
 
   return 0;

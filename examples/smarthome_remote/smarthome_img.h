@@ -5,8 +5,8 @@
  *      Author: kyle
  */
 
-#ifndef __EXAMPLES_SSD1306_SEG_SSD1306_IMG_H
-#define __EXAMPLES_SSD1306_SEG_SSD1306_IMG_H 1
+#ifndef __EXAMPLES_SMARTHOME_REMOTE_SMARTHOME_IMG_H
+#define __EXAMPLES_SMARTHOME_REMOTE_SMARTHOME_IMG_H 1
 
 static const unsigned char hkust_logo[]={
     0x00,0x00,0x00,0x00,0x00,0x00,
@@ -200,4 +200,4 @@ static const unsigned char rfid[]={
     0x00,0x00,0x00,0x00,0x00,0x00,//rfid.bmp,80x48
 };
 
-#endif /* __EXAMPLES_SSD1306_SEG_SSD1306_IMG_H */
+#endif /* __EXAMPLES_SMARTHOME_REMOTE_SMARTHOME_IMG_H */

@@ -19,7 +19,7 @@ STACKSIZE = $(CONFIG_EXAMPLES_SMARTHOME_REMOTE_STACKSIZE)
 # Hello, World! Example
 
 ASRCS =
-CSRCS = smarthome_oled.c
+CSRCS = smarthome_oled.c smarthome_esp8266.c
 MAINSRC = smarthome_remote_main.c
 
 CONFIG_EXAMPLES_SMARTHOME_REMOTE_PROGNAME ?= smarthome_remote$(EXEEXT)
