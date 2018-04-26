@@ -17,6 +17,12 @@
 #include "smarthome_remote.h"
 
 /****************************************************************************
+ * Private Data
+ ****************************************************************************/
+char AT_RST[]="AT+RST\r\n";
+char ATE0[]="ATE0\r\n";
+
+/****************************************************************************
  * Private Functions
  ****************************************************************************/
 int
@@ -46,48 +52,13 @@ smarthome_esp8266_flush (int espfd)
 bool
 smarthome_esp8266_recv_ok (int espfd)
 {
-  char c;
+  char buff[16];
   int ret;
-//  struct pollfd fds[1];
-//  char buff[16];
-//
-//  memset (fds, 0, sizeof(struct pollfd));
-//  fds[0].fd = espfd;
-//  fds[0].events = POLLIN;
-//
-//  ret = poll(fds, 1, 1000);
-//
-//  if (ret < 0)
-//    {
-//      return false;
-//    }
-//  else if ((fds[0].revents & POLLERR) && (fds[0].revents & POLLHUP))
-//    {
-//      return false;
-//    }
-//  else if (fds[0].revents & POLLIN)
-//    {
-//      ret = read(espfd, buff, sizeof(buff));
-//      printf("Received %d bytes\n",ret);
-//      write(1,buff,ret);
-//    }
-//
-//  if (ret < 0)
-//    {
-//      return false;
-//    }
-  ret = read (espfd, &c, 1); // probably need debugging here
 
-  printf("%d bytes read\n",ret);
+  ret = read (espfd, buff, sizeof(buff));
 
-  if(c=='\r'){
-      read (espfd, &c, 1);
-      read (espfd, &c, 1);
-      read (espfd, &c, 1);
-      read (espfd, &c, 1);
-      read (espfd, &c, 1);
-      read (espfd, &c, 1);
-  }
+  if (strstr (buff, "OK") != NULL)
+    return true ;
 
   return false ;
 }
@@ -98,13 +69,11 @@ bool
 smarthome_esp8266_init (int espfd)
 {
   int ret;
-  sleep (1);
-//  ret = smarthome_esp8266_send_cmd (espfd, "AT+RST\r\n");
-//  smarthome_esp8266_recv_ok (espfd);
-//  printf ("%d bytes written\n", ret);
-//  smarthome_esp8266_flush (espfd);
-  ret = smarthome_esp8266_send_cmd (espfd, "ATE0\r\n");
-  printf ("%d bytes written\n", ret);
+  write (espfd, AT_RST, sizeof(AT_RST));
   sleep(1);
+  smarthome_esp8266_flush (espfd);
+
+  write (espfd, ATE0, sizeof(ATE0));
+  usleep (100000);
   return smarthome_esp8266_recv_ok (espfd);
 }
