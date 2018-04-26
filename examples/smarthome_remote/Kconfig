@@ -14,7 +14,7 @@ if EXAMPLES_SMARTHOME_REMOTE
 config EXAMPLES_SMARTHOME_ROMOTE_PROGNAME
 	string "Program name"
 	default "smarthome_remote"
-	depends on BUILD_KERNEL && CONFIG_NETUTILS_ESP8266
+	depends on BUILD_KERNEL
 	---help---
 		This is the name of the program that will be use when the NSH ELF
 		program is installed.

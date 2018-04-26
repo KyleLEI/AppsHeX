@@ -20,7 +20,6 @@
 #include <string.h>
 
 #include <nuttx/sensors/apds9960.h>
-#include <netutils/esp8266.h>
 #include "smarthome_remote.h"
 
 /****************************************************************************
@@ -82,8 +81,6 @@ smarthome_remote_main (int argc, char *argv[])
   //printf (SH_MAIN "APDS-9960 initialized\n");
 
   //printf (SH_MAIN "Initializing ESP8266\n");
-  lesp_initialize (); /* ESP8266 worker thread spawned inside */
-  lesp_soft_reset ();
   //printf (SH_MAIN "ESP8266 initialized\n\n");
 
   connecting_msg[0]=0;
