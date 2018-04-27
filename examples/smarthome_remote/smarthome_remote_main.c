@@ -29,7 +29,7 @@
  ****************************************************************************/
 char open_msg1[] = "XXELEC3300 Gp59";
 char open_msg2[] = "XXPlease wait...";
-char connecting_msg[] = "XXConnecting to base module";
+char connecting_msg[] = "XXConnecting to base";
 
 /****************************************************************************
  * Public Functions
@@ -47,6 +47,9 @@ smarthome_remote_main (int argc, char *argv[])
   int oledfd;
   int apdsfd;
   int espfd;
+
+  int nbytes;
+  char gest;
 
   /* Open OLED driver*/
   oledfd = open ("/dev/slcd0", O_RDWR | O_NONBLOCK);
@@ -68,22 +71,46 @@ smarthome_remote_main (int argc, char *argv[])
   if (apdsfd < 0)
     return -1;
 
-  printf("Opening USART\n");
+  printf ("Opening USART\n");
   /* Open ESP8266 USART(tty) driver */
-  espfd = open ("/dev/ttyS1", O_RDWR| O_NONBLOCK);
+  espfd = open ("/dev/ttyS1", O_RDWR | O_NONBLOCK);
   if (espfd < 1)
     return -1;
-  printf("USART opened\n");
+  printf ("USART opened\n");
 
   connecting_msg[0] = 0;
   connecting_msg[1] = 1;
   write (oledfd, connecting_msg, sizeof(connecting_msg));
 
-  if(!smarthome_esp8266_init(espfd))
+  if (!smarthome_esp8266_init (espfd))
     return -1;
-  printf("ESP8266 Initialized\n");
+  printf ("ESP8266 Initialized\n");
 
+  for (;;)
+    {
+      nbytes = read (apdsfd, (void *) &gest, sizeof(gest));
+      if (nbytes == 1)
+	{
+	  switch (gest)
+	    {
+	    case DIR_LEFT:
+	      smarthome_draw_hkust_logo (oledfd);
+	      break;
 
+	    case DIR_RIGHT:
+	      smarthome_draw_rfid (oledfd);
+	      break;
+
+	    case DIR_UP:
+	      smarthome_draw_light_on (oledfd);
+	      break;
+
+	    case DIR_DOWN:
+	      smarthome_draw_light_off (oledfd);
+	      break;
+	    }
+	}
+    }
 
   return 0;
 }

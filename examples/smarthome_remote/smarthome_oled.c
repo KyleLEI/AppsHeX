@@ -29,9 +29,22 @@ struct slcd_bmp_s bmp =
       .y0 = 2,
       .y1 = 8 };
 
+struct slcd_fill_s fill =
+  {
+      .start_line = 2,
+      .end_line = 7,
+      .color = 0x00 };
+
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
+
+void
+smarthome_clear_img (int oledfd)
+{
+  ioctl (oledfd, SLCDIOC_FILLLINE, (unsigned long) &fill);
+}
+
 void
 smarthome_clear_oled (int oledfd)
 {
@@ -41,6 +54,7 @@ smarthome_clear_oled (int oledfd)
 void
 smarthome_draw_hkust_logo (int oledfd)
 {
+  smarthome_clear_img (oledfd);
   bmp.x0 = OLED_MID - 15;
   bmp.x1 = OLED_MID + 15;
   bmp.bmp = hkust_logo;
@@ -50,6 +64,7 @@ smarthome_draw_hkust_logo (int oledfd)
 void
 smarthome_draw_light_off (int oledfd)
 {
+  smarthome_clear_img (oledfd);
   bmp.x0 = OLED_MID - 14;
   bmp.x1 = OLED_MID + 15;
   bmp.bmp = light_off;
@@ -59,6 +74,7 @@ smarthome_draw_light_off (int oledfd)
 void
 smarthome_draw_light_on (int oledfd)
 {
+  smarthome_clear_img (oledfd);
   bmp.x0 = OLED_MID - 20;
   bmp.x1 = OLED_MID + 21;
   bmp.bmp = light_on;
@@ -68,6 +84,7 @@ smarthome_draw_light_on (int oledfd)
 void
 smarthome_draw_rfid (int oledfd)
 {
+  smarthome_clear_img (oledfd);
   bmp.x0 = OLED_MID - 40;
   bmp.x1 = OLED_MID + 40;
   bmp.bmp = rfid;

@@ -12,7 +12,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdbool.h>
-#include <poll.h>
 
 #include "smarthome_remote.h"
 
@@ -68,7 +67,6 @@ smarthome_esp8266_recv_ok (int espfd)
 bool
 smarthome_esp8266_init (int espfd)
 {
-  int ret;
   write (espfd, AT_RST, sizeof(AT_RST));
   sleep(1);
   smarthome_esp8266_flush (espfd);
