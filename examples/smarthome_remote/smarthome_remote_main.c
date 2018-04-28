@@ -31,9 +31,7 @@
 char open_msg1[] = "XXELEC3300 Gp59";
 char open_msg2[] = "XXPlease wait...";
 char connecting_msg[] = "XXConnecting to base";
-char connected_msg[] = "XXConnected to base";
-char GPIO0_0[] = "GPIO_RESET0";
-char GPIO0_1[] = "GPIO_SET0";
+char connected_msg[] = "XXConnected to base ";
 
 /****************************************************************************
  * Public Functions
@@ -51,6 +49,10 @@ smarthome_remote_main (int argc, char *argv[])
   int oledfd;
   int apdsfd;
   int espfd;
+  int selection = 0;
+  bool status[5] =
+    {
+	false };
 
   int nbytes;
   char gest;
@@ -101,24 +103,29 @@ smarthome_remote_main (int argc, char *argv[])
 	{
 	  switch (gest)
 	    {
-	    case DIR_LEFT:
-	      smarthome_draw_hkust_logo (oledfd);
+	    case DIR_RIGHT:
+	      selection--;
+	      if (selection < 0)
+		selection = 4;
 	      break;
 
-	    case DIR_RIGHT:
-	      smarthome_draw_rfid (oledfd);
+	    case DIR_LEFT:
+	      selection++;
+	      if (selection > 4)
+		selection = 0;
 	      break;
 
 	    case DIR_UP:
-	      smarthome_esp8266_send (espfd, GPIO0_0, sizeof(GPIO0_0));
-	      smarthome_draw_light_on (oledfd);
+	      status[selection] = true;
+	      smarthome_esp8266_send_cmd (espfd, selection, status);
 	      break;
 
 	    case DIR_DOWN:
-	      smarthome_esp8266_send (espfd, GPIO0_1, sizeof(GPIO0_1));
-	      smarthome_draw_light_off (oledfd);
+	      status[selection] = false;
+	      smarthome_esp8266_send_cmd (espfd, selection, status);
 	      break;
 	    }
+	  smarthome_update_oled (oledfd, selection, status);
 	}
     }
 

@@ -124,6 +124,9 @@ const struct symtab_s CONFIG_EXECFUNCS_SYMTAB[1];
 #ifdef CONFIG_EXAMPLES_SMARTHOME_BASE
 extern int smarthome_base_main (int argc, char *argv[]);
 #endif
+#ifdef CONFIG_EXAMPLES_SMARTHOME_REMOTE
+extern int smarthome_remote_main (int argc, char *argv[]);
+#endif
 /****************************************************************************
  * Name: nsh_main
  ****************************************************************************/
@@ -186,9 +189,16 @@ int nsh_main(int argc, char *argv[])
 
 #ifdef CONFIG_EXAMPLES_SMARTHOME_BASE
   task_create("smarthome_base", CONFIG_EXAMPLES_SMARTHOME_BASE_PRIORITY,
-      CONFIG_EXAMPLES_SMARTHOME_BASE_STACKSIZE, smarthome_base_main,
-      NULL);
+	      CONFIG_EXAMPLES_SMARTHOME_BASE_STACKSIZE, smarthome_base_main,
+	      NULL);
 #endif
+
+#ifdef CONFIG_EXAMPLES_SMARTHOME_REMOTE
+  task_create("smarthome_remote", CONFIG_EXAMPLES_SMARTHOME_REMOTE_PRIORITY,
+	      CONFIG_EXAMPLES_SMARTHOME_REMOTE_STACKSIZE, smarthome_remote_main,
+	      NULL);
+#endif
+
   /* If the serial console front end is selected, then run it on this thread */
 
 #ifdef CONFIG_NSH_CONSOLE

@@ -10,6 +10,8 @@
 #include <nuttx/config.h>
 
 #include <sys/ioctl.h>
+#include <unistd.h>
+#include <stdio.h>
 
 #include <nuttx/lcd/ssd1306_seg.h>
 #include "smarthome_remote.h"
@@ -34,6 +36,8 @@ struct slcd_fill_s fill =
       .start_line = 2,
       .end_line = 7,
       .color = 0x00 };
+
+char rfid_msg[] = "XXReg new/del all   ";
 
 /****************************************************************************
  * Public Functions
@@ -89,4 +93,43 @@ smarthome_draw_rfid (int oledfd)
   bmp.x1 = OLED_MID + 40;
   bmp.bmp = rfid;
   ioctl (oledfd, SLCDIOC_DRAWBMP, (unsigned long) &bmp);
+}
+
+void
+smarthome_update_oled (int oledfd, int selection, bool status[])
+{
+  char buff[32];
+  int bytelen;
+
+  if (selection <= 3) // relay commands
+    {
+      if (status[selection])
+	{
+	  bytelen = sprintf (buff, "XXLight %d: on       ", selection + 1);
+
+	  buff[0] = 0;
+	  buff[1] = 1;
+
+	  write (oledfd, buff, bytelen + 1);
+	  smarthome_draw_light_on (oledfd);
+	}
+      else
+	{
+	  bytelen = sprintf (buff, "XXLight %d: off       ", selection + 1);
+
+	  buff[0] = 0;
+	  buff[1] = 1;
+
+	  write (oledfd, buff, bytelen + 1);
+	  smarthome_draw_light_off (oledfd);
+	}
+    }
+  else // rfid command
+    {
+      rfid_msg[0] = 0;
+      rfid_msg[1] = 1;
+
+      write (oledfd, rfid_msg, sizeof(rfid_msg));
+      smarthome_draw_rfid (oledfd);
+    }
 }
