@@ -35,5 +35,9 @@ smarthome_draw_rfid (int oledfd);
 /* ESP8266-related */
 bool
 smarthome_esp8266_init (int espfd);
+bool
+smarthome_esp8266_connect (int espfd);
+bool
+smarthome_esp8266_send (int espfd,char* cmd, int len);
 
 #endif /* __EXAMPLES_SMARTHOME_REMOTE_SMARTHOME_REMOTE_H */

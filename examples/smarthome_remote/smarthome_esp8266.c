@@ -18,8 +18,9 @@
 /****************************************************************************
  * Private Data
  ****************************************************************************/
-char AT_RST[]="AT+RST\r\n";
-char ATE0[]="ATE0\r\n";
+char AT_RST[] = "AT+RST\r\n";
+char ATE0[] = "ATE0\r\n";
+char AT_CIPSTART[] = "AT+CIPSTART=\"TCP\",\"192.168.4.1\",233\r\n";
 
 /****************************************************************************
  * Private Functions
@@ -36,7 +37,7 @@ smarthome_esp8266_send_cmd (int espfd, char* cmd)
 void
 smarthome_esp8266_flush (int espfd)
 {
-  char buffer[16];
+  char buffer[32];
   ssize_t ret;
 
   do
@@ -51,16 +52,16 @@ smarthome_esp8266_flush (int espfd)
 bool
 smarthome_esp8266_recv_ok (int espfd)
 {
-  char buff[16];
-  int ret;
+  char buff[32];
 
-  ret = read (espfd, buff, sizeof(buff));
+  read (espfd, buff, sizeof(buff));
 
   if (strstr (buff, "OK") != NULL)
     return true ;
 
   return false ;
 }
+
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -68,10 +69,43 @@ bool
 smarthome_esp8266_init (int espfd)
 {
   write (espfd, AT_RST, sizeof(AT_RST));
-  sleep(1);
+  sleep (3);
   smarthome_esp8266_flush (espfd);
 
   write (espfd, ATE0, sizeof(ATE0));
   usleep (100000);
   return smarthome_esp8266_recv_ok (espfd);
+}
+
+// since automatic hotspot connection is set, loop until connected
+bool
+smarthome_esp8266_connect (int espfd)
+{
+  do
+    {
+      write (espfd, AT_CIPSTART, sizeof(AT_CIPSTART));
+      usleep (100000);
+    }
+  while (!smarthome_esp8266_recv_ok (espfd));
+  return true ;
+}
+
+bool
+smarthome_esp8266_send (int espfd,char* cmd, int len){
+  char buff[32];
+  int numchar;
+
+
+  numchar = sprintf(buff,"AT+CIPSEND=%d\r\n",len);
+  write (espfd, buff, numchar+1);
+  usleep (100000);
+  if(!smarthome_esp8266_recv_ok (espfd))
+    return false;
+
+  write (espfd, cmd, len);
+  usleep (100000);
+  if(!smarthome_esp8266_recv_ok (espfd))
+    return false;
+
+  return true;
 }

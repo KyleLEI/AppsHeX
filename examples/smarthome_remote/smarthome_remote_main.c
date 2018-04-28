@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include <nuttx/sensors/apds9960.h>
 #include "smarthome_remote.h"
@@ -30,6 +31,9 @@
 char open_msg1[] = "XXELEC3300 Gp59";
 char open_msg2[] = "XXPlease wait...";
 char connecting_msg[] = "XXConnecting to base";
+char connected_msg[] = "XXConnected to base";
+char GPIO0_0[] = "GPIO_RESET0";
+char GPIO0_1[] = "GPIO_SET0";
 
 /****************************************************************************
  * Public Functions
@@ -71,21 +75,25 @@ smarthome_remote_main (int argc, char *argv[])
   if (apdsfd < 0)
     return -1;
 
-  printf ("Opening USART\n");
   /* Open ESP8266 USART(tty) driver */
   espfd = open ("/dev/ttyS1", O_RDWR | O_NONBLOCK);
   if (espfd < 1)
     return -1;
-  printf ("USART opened\n");
-
-  connecting_msg[0] = 0;
-  connecting_msg[1] = 1;
-  write (oledfd, connecting_msg, sizeof(connecting_msg));
 
   if (!smarthome_esp8266_init (espfd))
     return -1;
   printf ("ESP8266 Initialized\n");
 
+  connecting_msg[0] = 0;
+  connecting_msg[1] = 1;
+  write (oledfd, connecting_msg, sizeof(connecting_msg));
+
+  if (!smarthome_esp8266_connect (espfd))
+    return -1;
+
+  connected_msg[0] = 0;
+  connected_msg[1] = 1;
+  write (oledfd, connected_msg, sizeof(connected_msg));
   for (;;)
     {
       nbytes = read (apdsfd, (void *) &gest, sizeof(gest));
@@ -102,10 +110,12 @@ smarthome_remote_main (int argc, char *argv[])
 	      break;
 
 	    case DIR_UP:
+	      smarthome_esp8266_send (espfd, GPIO0_0, sizeof(GPIO0_0));
 	      smarthome_draw_light_on (oledfd);
 	      break;
 
 	    case DIR_DOWN:
+	      smarthome_esp8266_send (espfd, GPIO0_1, sizeof(GPIO0_1));
 	      smarthome_draw_light_off (oledfd);
 	      break;
 	    }
