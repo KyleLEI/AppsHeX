@@ -22,7 +22,6 @@
 char AT_RST[] = "AT+RST\r\n";
 char ATE0[] = "ATE0\r\n";
 char AT_CIPSTART[] = "AT+CIPSTART=\"TCP\",\"192.168.4.1\",233\r\n";
-char AT_CWJAP[] = "AT+CWJAP_CUR=\"ELEC3300_GP59\",\"12345678\"\r\n";
 char CARD_REG[] = "CARD_REG";
 char CARD_DEL[] = "CARD_DEL";
 
@@ -71,6 +70,7 @@ smarthome_esp8266_recv_ok (int espfd)
 bool
 smarthome_esp8266_init (int espfd)
 {
+  usleep (500000);
   write (espfd, AT_RST, sizeof(AT_RST));
   sleep (3);
   smarthome_esp8266_flush (espfd);
@@ -84,13 +84,6 @@ smarthome_esp8266_init (int espfd)
 bool
 smarthome_esp8266_connect (int espfd)
 {
-  do //keep trying to connecting to AP
-    {
-      write (espfd, AT_CWJAP, sizeof(AT_CWJAP));
-      sleep (6);
-    }
-  while (!smarthome_esp8266_recv_ok (espfd));
-
   do //keep trying to connect to TCP server
     {
       write (espfd, AT_CIPSTART, sizeof(AT_CIPSTART));
