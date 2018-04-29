@@ -155,7 +155,7 @@ smarthome_rfid_daemon (void* args)
 	  break;
 
 	case sh_RFID_REG_CARD:
-	  if (m_state->card_count > SH_NUM_REG_CARDS)
+	  if (m_state->card_count >= SH_NUM_REG_CARDS)
 	    {
 	      smarthome_write_slcd (m_state, reg_max_msg, sizeof(reg_max_msg));
 	      m_state->rfid_mode = sh_RFID_READ;
@@ -171,16 +171,15 @@ smarthome_rfid_daemon (void* args)
 				    sizeof(reg_success_msg));
 
 	      smarthome_rfid_save_cardid (m_state);
-	      m_state->rfid_mode = sh_RFID_READ;
 	    }
 	  else
 	    {
 	      printf ("rfid_reg: Failed to read card\n");
 	      smarthome_write_slcd (m_state, reg_abort_msg,
 				    sizeof(reg_abort_msg));
-	      m_state->rfid_mode = sh_RFID_READ;
-	    }
 
+	    }
+	  m_state->rfid_mode = sh_RFID_READ;
 	  break;
 
 	case sh_RFID_DEL_CARDS:
