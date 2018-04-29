@@ -70,7 +70,6 @@ smarthome_esp8266_recv_ok (int espfd)
 bool
 smarthome_esp8266_init (int espfd)
 {
-  usleep (500000);
   write (espfd, AT_RST, sizeof(AT_RST));
   sleep (3);
   smarthome_esp8266_flush (espfd);

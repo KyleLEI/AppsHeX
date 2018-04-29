@@ -30,6 +30,7 @@
  ****************************************************************************/
 char open_msg1[] = "XXELEC3300 Gp59";
 char open_msg2[] = "XXPlease wait...";
+char esp_msg[] = "XXESP8266 failed, retry";
 char connecting_msg[] = "XXConnecting to base";
 char connected_msg[] = "XXConnected to base ";
 
@@ -83,7 +84,12 @@ smarthome_remote_main (int argc, char *argv[])
     return -1;
 
   if (!smarthome_esp8266_init (espfd))
-    return -1;
+    {
+      esp_msg[0] = 0;
+      esp_msg[1] = 1;
+      write (oledfd, esp_msg, sizeof(esp_msg));
+      return -1;
+    }
   printf ("ESP8266 Initialized\n");
 
   connecting_msg[0] = 0;
