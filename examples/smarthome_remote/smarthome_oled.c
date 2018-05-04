@@ -96,25 +96,16 @@ smarthome_draw_rfid (int oledfd)
 }
 
 void
-smarthome_update_oled (int oledfd, int selection, bool status[])
+smarthome_update_oled (int oledfd, int selection, int status[])
 {
   char buff[32];
   int bytelen;
 
   if (selection <= 3) // relay commands
     {
-      if (status[selection])
+      switch (status[selection])
 	{
-	  bytelen = sprintf (buff, "XXLight %d: on       ", selection + 1);
-
-	  buff[0] = 0;
-	  buff[1] = 1;
-
-	  write (oledfd, buff, bytelen + 1);
-	  smarthome_draw_light_on (oledfd);
-	}
-      else
-	{
+	case 0:
 	  bytelen = sprintf (buff, "XXLight %d: off       ", selection + 1);
 
 	  buff[0] = 0;
@@ -122,6 +113,25 @@ smarthome_update_oled (int oledfd, int selection, bool status[])
 
 	  write (oledfd, buff, bytelen + 1);
 	  smarthome_draw_light_off (oledfd);
+	  break;
+	case 1:
+	  bytelen = sprintf (buff, "XXLight %d: auto     ", selection + 1);
+
+	  buff[0] = 0;
+	  buff[1] = 1;
+
+	  write (oledfd, buff, bytelen + 1);
+	  smarthome_draw_light_on (oledfd); //TODO: new icon
+	  break;
+	case 2:
+	  bytelen = sprintf (buff, "XXLight %d: on       ", selection + 1);
+
+	  buff[0] = 0;
+	  buff[1] = 1;
+
+	  write (oledfd, buff, bytelen + 1);
+	  smarthome_draw_light_on (oledfd);
+	  break;
 	}
     }
   else // rfid command

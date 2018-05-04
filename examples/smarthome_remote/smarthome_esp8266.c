@@ -113,27 +113,31 @@ smarthome_esp8266_send (int espfd, char* cmd, int len)
 }
 
 void
-smarthome_esp8266_send_cmd (int espfd, int selection, bool status[])
+smarthome_esp8266_send_cmd (int espfd, int selection, int status[])
 {
   char buff[32];
   int bytelen;
 
   if (selection <= 3)
     { // relay command
-      if (status[selection])
+      switch (status[selection])
 	{
-	  bytelen = sprintf (buff, "GPIO_RESET%d", selection);
-	  smarthome_esp8266_send (espfd, buff, bytelen + 1);
-	}
-      else
-	{
+	case 0: //turn off
 	  bytelen = sprintf (buff, "GPIO_SET%d", selection);
+	  smarthome_esp8266_send (espfd, buff, bytelen + 1);
+	  break;
+	case 1: //set automatic
+	  bytelen = sprintf (buff, "GPIO_AUTO%d", selection);
+	  smarthome_esp8266_send (espfd, buff, bytelen + 1);
+	  break;
+	case 2: //turn on
+	  bytelen = sprintf (buff, "GPIO_RESET%d", selection);
 	  smarthome_esp8266_send (espfd, buff, bytelen + 1);
 	}
     }
   else
     { // rfid command
-      if (status[selection])
+      if (status[selection] == 1)
 	smarthome_esp8266_send (espfd, CARD_REG, sizeof(CARD_REG));
       else
 	smarthome_esp8266_send (espfd, CARD_DEL, sizeof(CARD_DEL));

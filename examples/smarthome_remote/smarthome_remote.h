@@ -32,7 +32,7 @@ smarthome_draw_light_off (int oledfd);
 void
 smarthome_draw_rfid (int oledfd);
 void
-smarthome_update_oled (int oledfd,int selection,bool status[]);
+smarthome_update_oled (int oledfd,int selection,int status[]);
 
 /* ESP8266-related */
 bool
@@ -42,6 +42,6 @@ smarthome_esp8266_connect (int espfd);
 bool
 smarthome_esp8266_send (int espfd,char* cmd, int len);
 void
-smarthome_esp8266_send_cmd (int espfd,int selection,bool status[]);
+smarthome_esp8266_send_cmd (int espfd,int selection,int status[]);
 
 #endif /* __EXAMPLES_SMARTHOME_REMOTE_SMARTHOME_REMOTE_H */

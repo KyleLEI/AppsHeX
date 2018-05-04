@@ -184,26 +184,35 @@ smarthome_base_main (int argc, char *argv[])
       rsize = lesp_recv (sockfd, (uint8_t *) buff, sizeof(buff), 0); //returns -1 if waited too long
       if (rsize > 0)
 	{
-	  printf ("Received %d bytes: ", rsize);
-	  fflush (stdout);
-	  write (1, buff, rsize);
-	  puts ("\n");
-	  fflush (stdout);
+//	  printf ("Received %d bytes: ", rsize);
+//	  fflush (stdout);
+//	  write (1, buff, rsize);
+//	  puts ("\n");
+//	  fflush (stdout);
 	  if (memcmp (buff, "GPIO_SET", 8) == 0)
 	    {
 	      g_sh_state.rgb_mode = sh_RGB_FLASH_BLUE;
 	      gpio_id = buff[8] - '0';
 	      printf ("Setting GPIO %d\n", gpio_id);
+	      g_sh_state.is_auto[gpio_id] = false;
 	      ret = smarthome_write_gpio (&g_sh_state, gpio_id, true);
 	      if (ret < 0)
 		printf (SH_MAIN "Failed to write gpio %d\n", gpio_id);
 
+	    }
+	  else if (memcmp (buff, "GPIO_AUTO", 9) == 0)
+	    {
+	      g_sh_state.rgb_mode = sh_RGB_FLASH_BLUE;
+	      gpio_id = buff[9] - '0';
+	      printf ("Autosetting GPIO %d\n", gpio_id);
+	      g_sh_state.is_auto[gpio_id] = true;
 	    }
 	  else if (memcmp (buff, "GPIO_RESET", 10) == 0)
 	    {
 	      g_sh_state.rgb_mode = sh_RGB_FLASH_BLUE;
 	      gpio_id = buff[10] - '0';
 	      printf ("Resetting GPIO %d\n", gpio_id);
+	      g_sh_state.is_auto[gpio_id] = false;
 	      ret = smarthome_write_gpio (&g_sh_state, gpio_id, false);
 	      if (ret < 0)
 		printf (SH_MAIN "Failed to write gpio %d\n", gpio_id);
@@ -217,7 +226,7 @@ smarthome_base_main (int argc, char *argv[])
 	  else if (memcmp (buff, "CARD_DEL", 8) == 0)
 	    {
 	      g_sh_state.rgb_mode = sh_RGB_FLASH_BLUE;
-	      printf ("Registering new card\n");
+	      printf ("Delete all cardids\n");
 	      g_sh_state.rfid_mode = sh_RFID_DEL_CARDS;
 	    }
 	  printf ("\n");

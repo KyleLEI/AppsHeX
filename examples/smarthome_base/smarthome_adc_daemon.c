@@ -28,6 +28,10 @@
 #  define CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_DEVNAME "/dev/adc0"
 #endif
 
+#ifndef CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES
+#  define CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES (0)
+#endif
+
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -35,11 +39,12 @@
 void*
 smarthome_adc_daemon (void* args)
 {
-  bool * m_is_auto = ((sh_state_t*) args)->is_auto;
+  sh_state_t* m_state = (sh_state_t*) args;
   struct adc_msg_s sample;
-
   int fd;
   int ret;
+  int i;
+  bool state;
 
   fd = open (CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_DEVNAME, O_RDONLY);
 
@@ -74,9 +79,13 @@ smarthome_adc_daemon (void* args)
       else
 	{
 	  printf ("adc_daemon: channel: %d value: %d\n", sample.am_channel,
-		  sample.am_data); //TODO: automate here
+		  sample.am_data);
+	  state = !(sample.am_data < CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES);
+	  for (i = 0; i < SH_NUM_RELAYS; i++)
+	    if (m_state->is_auto[i])
+	      smarthome_write_gpio (m_state, i, state);
 	}
-      usleep (250000); // wait 250ms
+      sleep (1); // wait 1s
     }
   return NULL;
 }

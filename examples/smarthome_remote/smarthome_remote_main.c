@@ -51,9 +51,9 @@ smarthome_remote_main (int argc, char *argv[])
   int apdsfd;
   int espfd;
   int selection = 0;
-  bool status[5] =
-    {
-	false };
+  int status[5] = // 0 1 2 for relay, 0 1 for rfid
+	{
+	    0 };
 
   int nbytes;
   char gest;
@@ -122,12 +122,26 @@ smarthome_remote_main (int argc, char *argv[])
 	      break;
 
 	    case DIR_UP:
-	      status[selection] = true;
+	      if (selection == 4) //rfid
+		status[selection] = 1;
+	      else //relay
+		{
+		  status[selection]++;
+		  if (status[selection] > 2)
+		    status[selection] = 2;
+		}
 	      smarthome_esp8266_send_cmd (espfd, selection, status);
 	      break;
 
 	    case DIR_DOWN:
-	      status[selection] = false;
+	      if (selection == 4) //rfid
+		status[selection] = 0;
+	      else //relay
+		{
+		  status[selection]--;
+		  if (status[selection] < 0)
+		    status[selection] = 0;
+		}
 	      smarthome_esp8266_send_cmd (espfd, selection, status);
 	      break;
 	    }
