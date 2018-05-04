@@ -39,7 +39,6 @@ smarthome_rfid_save_cardid (sh_state_t* sh_state)
 {
   int fd;
   int i;
-  char buff[8];
 
   fd = open (CONFIG_EXAMPLES_SMARTHOME_BASE_RFID_FILENAME,
 	     O_WRONLY | O_CREAT | O_TRUNC);

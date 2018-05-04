@@ -70,6 +70,10 @@ typedef struct
 
   bool remote_connected;
 
+  /* ADC related */
+
+  pthread_t adc_thread;
+  bool is_auto[SH_NUM_RELAYS];
 } sh_state_t;
 
 /****************************************************************************
@@ -80,6 +84,8 @@ void*
 smarthome_rgbled_daemon (void* sh_state);
 void*
 smarthome_rfid_daemon (void* sh_state);
+void*
+smarthome_adc_daemon (void* sh_state);
 
 int
 smarthome_initialize_gpio (sh_state_t* sh_state);

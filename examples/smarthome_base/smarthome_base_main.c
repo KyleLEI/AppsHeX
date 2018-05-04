@@ -47,7 +47,11 @@ sh_state_t g_sh_state =
 	{ },
       .card_count = 0,
 
-      .remote_connected = false };
+      .remote_connected = false,
+
+      .is_auto =
+	{
+	    false } };
 
 char waiting_msg[] = "\n\nWaiting for\nremote module...";
 char conn_msg[] = "\n\nRemote module\nconnected";
@@ -126,6 +130,11 @@ smarthome_base_main (int argc, char *argv[])
       return 1;
     }
   printf (SH_MAIN "GPIO initialized\n\n");
+
+  printf (SH_MAIN "Spawning adc_daemon\n");
+  pthread_create (&g_sh_state.adc_thread, NULL, smarthome_adc_daemon,
+		  (void*) &g_sh_state);
+  printf (SH_MAIN "adc_daemon spawned\n\n");
 
   printf (SH_MAIN "Initializing RFID\n");
   ret = smarthome_initialize_rfid (&g_sh_state);
