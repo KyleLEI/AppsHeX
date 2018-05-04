@@ -122,27 +122,39 @@ smarthome_remote_main (int argc, char *argv[])
 	      break;
 
 	    case DIR_UP:
-	      if (selection == 4) //rfid
-		status[selection] = 1;
-	      else //relay
+	      if (selection != 4)
 		{
 		  status[selection]++;
 		  if (status[selection] > 2)
 		    status[selection] = 2;
+		  smarthome_esp8266_send_cmd (espfd, selection, status);
 		}
-	      smarthome_esp8266_send_cmd (espfd, selection, status);
 	      break;
 
 	    case DIR_DOWN:
-	      if (selection == 4) //rfid
-		status[selection] = 0;
-	      else //relay
+	      if (selection != 4)
 		{
 		  status[selection]--;
 		  if (status[selection] < 0)
 		    status[selection] = 0;
+		  smarthome_esp8266_send_cmd (espfd, selection, status);
 		}
-	      smarthome_esp8266_send_cmd (espfd, selection, status);
+	      break;
+
+	    case DIR_NEAR:
+	      if (selection == 4)
+		{
+		  status[selection] = 1;
+		  smarthome_esp8266_send_cmd (espfd, selection, status);
+		}
+	      break;
+
+	    case DIR_FAR:
+	      if (selection == 4)
+		{
+		  status[selection] = 0;
+		  smarthome_esp8266_send_cmd (espfd, selection, status);
+		}
 	      break;
 	    }
 	  smarthome_update_oled (oledfd, selection, status);
