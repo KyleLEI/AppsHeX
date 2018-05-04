@@ -41,7 +41,7 @@ smarthome_rfid_save_cardid (sh_state_t* sh_state)
   int i;
 
   fd = open (CONFIG_EXAMPLES_SMARTHOME_BASE_RFID_FILENAME,
-	     O_WRONLY | O_CREAT | O_TRUNC);
+  O_WRONLY | O_CREAT | O_TRUNC);
   if (fd < 0)
     return -1;
 
@@ -75,8 +75,10 @@ smarthome_rfid_clear_cardid (sh_state_t* sh_state)
  ****************************************************************************/
 char access_granted_msg[] = "\n\nAccess Granted\nWelcome home!";
 char access_denied_msg[] = "\n\nAccess Denied\n";
-char reg_max_msg[] = "\n\nSorry no more\nnew cards allowed";
+char reg_max_msg[] = "\n\nSorry no more\ncards allowed";
 char reg_success_msg[] = "\n\nNew card is\nregistered";
+char reg_in_progress_msg[] = "\n\nPlease hold card\nsteady";
+char del_reg_msg[] = "\n\nCards\ndeleted";
 char reg_abort_msg[] = "\n\nFailed to read\ncard";
 
 /****************************************************************************
@@ -133,7 +135,7 @@ smarthome_rfid_daemon (void* args)
 		      smarthome_write_slcd (m_state, access_granted_msg,
 					    sizeof(access_granted_msg));
 		      m_state->rgb_mode = sh_RGB_FLASH_GREEN;
-		      usleep (1500000); /* Sleep to prevent reading again */
+		      sleep(1); /* Sleep to prevent reading again */
 		      goto readnext;
 		    }
 		}
@@ -142,14 +144,6 @@ smarthome_rfid_daemon (void* args)
 	      smarthome_write_slcd (m_state, access_denied_msg,
 				    sizeof(access_denied_msg));
 	      m_state->rgb_mode = sh_RGB_FLASH_RED;
-	    }
-	  else if (ret == -EAGAIN || ret == -EPERM)
-	    {
-	      printf ("rfid_daemon: Card is not present!\n");
-	    }
-	  else
-	    {
-	      printf ("rfid_daemon: Unknown error\n");
 	    }
 	  break;
 
@@ -160,6 +154,9 @@ smarthome_rfid_daemon (void* args)
 	      m_state->rfid_mode = sh_RFID_READ;
 	      break;
 	    }
+	  smarthome_write_slcd (m_state, reg_in_progress_msg,
+				sizeof(reg_in_progress_msg));
+	  sleep (1); //wait for signal to stabilize
 	  ret = read (fd, buffer, 11);
 	  if (ret == 11)
 	    {
@@ -183,6 +180,7 @@ smarthome_rfid_daemon (void* args)
 
 	case sh_RFID_DEL_CARDS:
 	  smarthome_rfid_clear_cardid (m_state);
+	  smarthome_write_slcd (m_state, del_reg_msg, sizeof(del_reg_msg));
 	  m_state->rfid_mode = sh_RFID_READ;
 	  break;
 

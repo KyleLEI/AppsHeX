@@ -28,8 +28,12 @@
 #  define CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_DEVNAME "/dev/adc0"
 #endif
 
-#ifndef CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES
-#  define CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES (0)
+#ifndef CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES_LOWER
+#  define CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES_LOWER (500)
+#endif
+
+#ifndef CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES_UPPER
+#  define CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES_UPPER (3000)
 #endif
 
 /****************************************************************************
@@ -80,7 +84,11 @@ smarthome_adc_daemon (void* args)
 	{
 	  printf ("adc_daemon: channel: %d value: %d\n", sample.am_channel,
 		  sample.am_data);
-	  state = !(sample.am_data < CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES);
+	  if (sample.am_data > CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES_UPPER) //dark
+	    state = false;
+	  else if (sample.am_data
+	      < CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES_LOWER) //bright
+	    state = true;
 	  for (i = 0; i < SH_NUM_RELAYS; i++)
 	    if (m_state->is_auto[i])
 	      smarthome_write_gpio (m_state, i, state);

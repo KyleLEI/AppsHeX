@@ -28,6 +28,8 @@ smarthome_draw_hkust_logo (int oledfd);
 void
 smarthome_draw_light_on (int oledfd);
 void
+smarthome_draw_light_auto (int oledfd);
+void
 smarthome_draw_light_off (int oledfd);
 void
 smarthome_draw_rfid (int oledfd);
