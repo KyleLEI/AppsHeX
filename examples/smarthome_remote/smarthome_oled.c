@@ -76,6 +76,17 @@ smarthome_draw_light_off (int oledfd)
 }
 
 void
+smarthome_draw_light_auto (int oledfd)
+{
+  smarthome_clear_img (oledfd);
+  bmp.x0 = OLED_MID - 14;
+  bmp.x1 = OLED_MID + 15;
+  bmp.bmp = light_auto;
+  ioctl (oledfd, SLCDIOC_DRAWBMP, (unsigned long) &bmp);
+}
+
+
+void
 smarthome_draw_light_on (int oledfd)
 {
   smarthome_clear_img (oledfd);
@@ -121,7 +132,7 @@ smarthome_update_oled (int oledfd, int selection, int status[])
 	  buff[1] = 1;
 
 	  write (oledfd, buff, bytelen + 1);
-	  smarthome_draw_light_on (oledfd); //TODO: new icon
+	  smarthome_draw_light_auto (oledfd);
 	  break;
 	case 2:
 	  bytelen = sprintf (buff, "XXLight %d: on       ", selection + 1);

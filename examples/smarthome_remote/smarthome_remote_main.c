@@ -32,7 +32,7 @@ char open_msg1[] = "XXELEC3300 Gp59";
 char open_msg2[] = "XXPlease wait...";
 char esp_msg[] = "XXESP8266 failed, retry";
 char connecting_msg[] = "XXConnecting to base";
-char connected_msg[] = "XXConnected to base ";
+char locked_msg[] = "XXNEAR to unlock    ";
 
 /****************************************************************************
  * Public Functions
@@ -51,6 +51,7 @@ smarthome_remote_main (int argc, char *argv[])
   int apdsfd;
   int espfd;
   int selection = 0;
+  bool locked = true;
   int status[5] = // 0 1 2 for relay, 0 1 for rfid
 	{
 	    0 };
@@ -99,65 +100,89 @@ smarthome_remote_main (int argc, char *argv[])
   if (!smarthome_esp8266_connect (espfd))
     return -1;
 
-  connected_msg[0] = 0;
-  connected_msg[1] = 1;
-  write (oledfd, connected_msg, sizeof(connected_msg));
+  locked_msg[0] = 0;
+  locked_msg[1] = 1;
+  write (oledfd, locked_msg, sizeof(locked_msg));
   for (;;)
     {
       nbytes = read (apdsfd, (void *) &gest, sizeof(gest));
       if (nbytes == 1)
 	{
-	  switch (gest)
+	  if (!locked)
 	    {
-	    case DIR_RIGHT:
-	      selection--;
-	      if (selection < 0)
-		selection = 4;
-	      break;
-
-	    case DIR_LEFT:
-	      selection++;
-	      if (selection > 4)
-		selection = 0;
-	      break;
-
-	    case DIR_UP:
-	      if (selection != 4)
+	      switch (gest)
 		{
-		  status[selection]++;
-		  if (status[selection] > 2)
-		    status[selection] = 2;
-		  smarthome_esp8266_send_cmd (espfd, selection, status);
-		}
-	      break;
+		case DIR_RIGHT:
+		  selection--;
+		  if (selection < 0)
+		    selection = 4;
+		  break;
 
-	    case DIR_DOWN:
-	      if (selection != 4)
-		{
-		  status[selection]--;
-		  if (status[selection] < 0)
-		    status[selection] = 0;
-		  smarthome_esp8266_send_cmd (espfd, selection, status);
-		}
-	      break;
+		case DIR_LEFT:
+		  selection++;
+		  if (selection > 4)
+		    selection = 0;
+		  break;
 
-	    case DIR_NEAR:
-	      if (selection == 4)
-		{
-		  status[selection] = 1;
-		  smarthome_esp8266_send_cmd (espfd, selection, status);
-		}
-	      break;
+		case DIR_UP:
+		  if (selection != 4)
+		    {
+		      status[selection]++;
+		      if (status[selection] > 2)
+			{
+			  status[selection] = 2;
+			  continue;
+			}
+		      smarthome_esp8266_send_cmd (espfd, selection, status);
+		    }
+		  else
+		    {
+		      status[selection] = 1;
+		      smarthome_esp8266_send_cmd (espfd, selection, status);
+		      continue;
+		    }
 
-	    case DIR_FAR:
-	      if (selection == 4)
-		{
-		  status[selection] = 0;
-		  smarthome_esp8266_send_cmd (espfd, selection, status);
+		  break;
+
+		case DIR_DOWN:
+		  if (selection != 4)
+		    {
+		      status[selection]--;
+		      if (status[selection] < 0)
+			{
+			  status[selection] = 0;
+			  continue;
+			}
+		      smarthome_esp8266_send_cmd (espfd, selection, status);
+		    }
+		  else
+		    {
+		      status[selection] = 0;
+		      smarthome_esp8266_send_cmd (espfd, selection, status);
+		      continue;
+		    }
+		  break;
+
+		case DIR_FAR: // lock the controller
+		  locked = true;
+		  write (oledfd, locked_msg, sizeof(locked_msg));
+		  smarthome_draw_hkust_logo (oledfd);
+		  continue;
+		  break;
+
+		case DIR_NEAR:
+		  continue;
 		}
-	      break;
+	      smarthome_update_oled (oledfd, selection, status);
 	    }
-	  smarthome_update_oled (oledfd, selection, status);
+	  else // controller locked
+	    {
+	      if (gest == DIR_NEAR) // only NEAR unlocks the device
+		{
+		  locked = false;
+		  smarthome_update_oled (oledfd, selection, status);
+		}
+	    }
 	}
     }
 
