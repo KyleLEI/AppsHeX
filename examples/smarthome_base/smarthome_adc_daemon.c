@@ -33,7 +33,7 @@
 #endif
 
 #ifndef CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES_UPPER
-#  define CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES_UPPER (3000)
+#  define CONFIG_EXAMPLES_SMARTHOME_BASE_ADC_THRES_UPPER (2500)
 #endif
 
 /****************************************************************************
